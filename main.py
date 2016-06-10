@@ -14,6 +14,7 @@
 """
 
 from __future__ import print_function
+import requests, bs4
 
 class Plugin():
     "Information about plugin."
@@ -31,9 +32,10 @@ class Fetch():
 
     def __init__(self):
         print("Object created")
+        self.Plugins = []
 
     def getPluginsList(self):
-        print("Plugins")
+        print("Plugins list")
 
     def getInfo(self):
         print("Plugin Info")
@@ -54,9 +56,30 @@ class FetchFromGitHub(Fetch):
     def __init__(self):
         print("git workbenches")
 
+    def getpluginsList(self):
+        print('hi')
+        link = 'https://github.com/FreeCAD/FreeCAD-addons'
+        
+        req = requests.get(link)
 
+        soup = bs4.BeautifulSoup(req.text, 'html.parser')
+
+        #output = soup.select(".css-truncate.css-truncate-target")[0].getText()
+        output = soup.select(".css-truncate.css-truncate-target")
+
+        #for
+
+        print(output)
+
+        
 class FetchFromWiki():
     "fetching macros from wiki"
 
     def __init__(self):
         print("macros")
+
+obj = Fetch()
+obj.getInfo()
+
+git = FetchFromGitHub()
+git.getpluginsList()
