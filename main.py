@@ -15,17 +15,20 @@
 
 from __future__ import print_function
 import requests, bs4
+from github import Github
+
 
 class Plugin():
     "Information about plugin."
-    def __init__(self, name, author, plugin_type, description, baseurl, infourl):
+    # def __init__(self, name, author, plugin_type, description, baseurl, infourl):
+    def __init__(self, name, baseurl):
         "returns plugin info"
         self.name = name
-        self.author = author
-        self.plugin_type = plugin_type
-        self.description = description
+        # self.author = author
+        # self.plugin_type = plugin_type
+        # self.description = description
         self.baseurl = baseurl
-        self.infourl = infourl
+        # self.infourl = infourl
 
 class Fetch():
     "The base fetch class"
@@ -57,29 +60,47 @@ class FetchFromGitHub(Fetch):
         print("git workbenches")
 
     def getpluginsList(self):
-        print('hi')
-        link = 'https://github.com/FreeCAD/FreeCAD-addons'
+        g = Github("3595cd09a660854ff274f828ca15cdbc86865d14")
+
+        github_username = "FreeCAD"
+
+        # Name of the repository residing at github_username account.
+        repository = "FreeCAD-addons"
+
+        # Repository instance.
+        repo = g.get_user(github_username).get_repo(repository)
+        print("Fetching repository details...")
+
+        # To store count of number of submodules.
+        count = 0
         
-        req = requests.get(link)
+        # For storing instances of Plugin() class.
+        instances = []
 
-        soup = bs4.BeautifulSoup(req.text, 'html.parser')
+        # Iterations to fetch submodule entries and their info.
+        for x in repo.get_dir_contents(""):
+            # if(x.type == "submodule"):
+                # print(x.url)
 
-        #output = soup.select(".css-truncate.css-truncate-target")[0].getText()
-        output = soup.select(".css-truncate.css-truncate-target")
-
-        #for
-
-        print(output)
-
+            #Checks if the instance is a submodule, then fetches it's details. 
+            if(x.raw_data.get("type") == "submodule"):
+                count += 1
+                name = x.name
+                print(name)
+                url = x.raw_data.get("submodule_git_url")
         
+                instances = Plugin(name, url)
+                print(instances)
+
+
 class FetchFromWiki():
     "fetching macros from wiki"
 
     def __init__(self):
         print("macros")
 
-obj = Fetch()
-obj.getInfo()
+#obj = Fetch()
+#obj.getInfo()
 
 git = FetchFromGitHub()
 git.getpluginsList()
