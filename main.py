@@ -16,6 +16,7 @@
 from __future__ import print_function
 import requests, bs4
 from github import Github
+# import ipdb
 
 
 class Plugin():
@@ -58,6 +59,8 @@ class FetchFromGitHub(Fetch):
 
     def __init__(self):
         print("git workbenches")
+        # For storing instances of Plugin() class.
+        instances = []
 
     def getpluginsList(self):
         g = Github("3595cd09a660854ff274f828ca15cdbc86865d14")
@@ -74,7 +77,6 @@ class FetchFromGitHub(Fetch):
         # To store count of number of submodules.
         count = 0
         
-        # For storing instances of Plugin() class.
         instances = []
 
         # Iterations to fetch submodule entries and their info.
@@ -88,10 +90,15 @@ class FetchFromGitHub(Fetch):
                 name = x.name
                 print(name)
                 url = x.raw_data.get("submodule_git_url")
-        
-                instances = Plugin(name, url)
-                print(instances)
+                
+                # ipdb.set_trace()
 
+                instance = Plugin(name, url)
+                instances.append(instance)
+                # print(instances)
+
+                # ipdb.set_trace()
+        return instances
 
 class FetchFromWiki():
     "fetching macros from wiki"
@@ -103,4 +110,5 @@ class FetchFromWiki():
 #obj.getInfo()
 
 git = FetchFromGitHub()
-git.getpluginsList()
+plugins = git.getpluginsList()
+# ipdb.set_trace()
