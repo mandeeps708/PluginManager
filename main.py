@@ -63,7 +63,7 @@ class FetchFromGitHub(Fetch):
         instances = []
 
     def getpluginsList(self):
-        g = Github("3595cd09a660854ff274f828ca15cdbc86865d14")
+        g = Github()
 
         github_username = "FreeCAD"
 
