@@ -16,19 +16,20 @@
 from __future__ import print_function
 import requests, bs4
 from github import Github
-# import ipdb
+import re
+import ipdb
 
 
 class Plugin():
     "Information about plugin."
     # def __init__(self, name, author, plugin_type, description, baseurl, infourl):
-    def __init__(self, name, baseurl):
+    def __init__(self, name, author, baseurl, description):
         "returns plugin info"
         self.name = name
-        # self.author = author
-        # self.plugin_type = plugin_type
-        # self.description = description
+        self.author = author
         self.baseurl = baseurl
+        self.description = description
+        # self.plugin_type = plugin_type
         # self.infourl = infourl
 
 class Fetch():
@@ -63,7 +64,7 @@ class FetchFromGitHub(Fetch):
         instances = []
 
     def getpluginsList(self):
-        g = Github()
+        g = Github("6137f5c846fed2f74caa2496b08789275bc50efe")
 
         github_username = "FreeCAD"
 
@@ -87,13 +88,26 @@ class FetchFromGitHub(Fetch):
             #Checks if the instance is a submodule, then fetches it's details. 
             if(x.raw_data.get("type") == "submodule"):
                 count += 1
-                name = x.name
-                print(name)
-                url = x.raw_data.get("submodule_git_url")
+                submodule_name = x.name
+                print(submodule_name)
+
+                # URL of submodule repository.
+                submodule_url = x.raw_data.get("submodule_git_url")
+               
+                # Getting the owner name and repository name.
+                submodule_repoInfo = re.search('https://github.com/(.+?).git', submodule_url).group(1)
+
+                git = Github("6137f5c846fed2f74caa2496b08789275bc50efe")
                 
+                # Submodule information.
+                submodule_repo = git.get_repo(submodule_repoInfo)
+                submodule_author = submodule_repo.owner.name
+                submodule_description = submodule_repo.description
+
                 # ipdb.set_trace()
 
-                instance = Plugin(name, url)
+                # Creating Plugin class instances.
+                instance = Plugin(submodule_name, submodule_author, submodule_url, submodule_description)
                 instances.append(instance)
                 # print(instances)
 
