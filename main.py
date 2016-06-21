@@ -19,6 +19,8 @@ from github import Github
 import re
 import ipdb
 
+# Github API token.
+token = ""
 
 class Plugin():
     "Information about plugin."
@@ -63,8 +65,8 @@ class FetchFromGitHub(Fetch):
         # For storing instances of Plugin() class.
         instances = []
 
-    def getpluginsList(self):
-        g = Github("6137f5c846fed2f74caa2496b08789275bc50efe")
+    def getPluginsList(self):
+        g = Github(token)
 
         github_username = "FreeCAD"
 
@@ -97,7 +99,7 @@ class FetchFromGitHub(Fetch):
                 # Getting the owner name and repository name.
                 submodule_repoInfo = re.search('https://github.com/(.+?).git', submodule_url).group(1)
 
-                git = Github("6137f5c846fed2f74caa2496b08789275bc50efe")
+                git = Github(token)
                 
                 # Submodule information.
                 submodule_repo = git.get_repo(submodule_repoInfo)
@@ -120,9 +122,43 @@ class FetchFromWiki():
     def __init__(self):
         print("macros")
 
+
+    def getPluginsList(self):
+        # FreeCAD Macro page.
+        source_link = "http://www.freecadweb.org/wiki/index.php?title=Macros_recipes"
+
+        # Generating parsed HTML tree from the URL.
+        req = requests.get(source_link)
+        soup = bs4.BeautifulSoup(req.text, 'html.parser')
+
+        # Selects the spans with class MacroLink enclosing the macro links.
+        macros = soup.select("span.MacroLink")
+        macro_instances = []
+        for macro in macros:
+            # Prints macro name
+            macro_name = macro.a.getText()
+
+            # Macro URL.
+            macro_url = "http://freecadweb.org" + macro.a.get("href")
+            print(macro_url)
+
+            macro_page = requests.get(macro_url)
+            soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
+            ipdb.set_trace()
+            # Use the same URL to fetch macro desciption and macro author
+            macro_description = soup.select(".macro-description")[0].getText()
+            macro_author = soup.select(".macro-author")[0].getText()
+
+            macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
+            macro_instances.append(macro_instance)
+
+        return macro_instances
+
 #obj = Fetch()
 #obj.getInfo()
 
 git = FetchFromGitHub()
-plugins = git.getpluginsList()
+plugins = git.getPluginsList()
+mac = FetchFromWiki()
+mplugins = mac.getPluginsList()
 # ipdb.set_trace()
