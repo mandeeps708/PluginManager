@@ -14,7 +14,6 @@
 """
 
 from __future__ import print_function
-import requests, bs4
 import re
 # import ipdb
 
@@ -137,42 +136,48 @@ class FetchFromWiki():
 
 
     def getPluginsList(self):
-        # FreeCAD Macro page.
-        source_link = "http://www.freecadweb.org/wiki/index.php?title=Macros_recipes"
 
-        try:
-            # Generating parsed HTML tree from the URL.
-            req = requests.get(source_link)
-            soup = bs4.BeautifulSoup(req.text, 'html.parser')
+            try:
+                import requests, bs4
 
-            # Selects the spans with class MacroLink enclosing the macro links.
-            macros = soup.select("span.MacroLink")
-            macro_instances = []
-            for macro in macros:
-                # Prints macro name
-                macro_name = macro.a.getText()
+                # FreeCAD Macro page.
+                source_link = "http://www.freecadweb.org/wiki/index.php?title=Macros_recipes"
 
-                # Macro URL.
-                macro_url = "http://freecadweb.org" + macro.a.get("href")
-                print(macro_url)
+                # Generating parsed HTML tree from the URL.
+                req = requests.get(source_link)
+                soup = bs4.BeautifulSoup(req.text, 'html.parser')
 
-                macro_page = requests.get(macro_url)
-                soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
-                # ipdb.set_trace()
-                # Use the same URL to fetch macro desciption and macro author
-                macro_description = soup.select(".macro-description")[0].getText()
-                macro_author = soup.select(".macro-author")[0].getText()
+                # Selects the spans with class MacroLink enclosing the macro links.
+                macros = soup.select("span.MacroLink")
+                macro_instances = []
+                for macro in macros:
+                    # Prints macro name
+                    macro_name = macro.a.getText()
 
-                macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
-                macro_instances.append(macro_instance)
+                    # Macro URL.
+                    macro_url = "http://freecadweb.org" + macro.a.get("href")
+                    print(macro_url)
 
-            return macro_instances
+                    macro_page = requests.get(macro_url)
+                    soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
+                    # ipdb.set_trace()
+                    # Use the same URL to fetch macro desciption and macro author
+                    macro_description = soup.select(".macro-description")[0].getText()
+                    macro_author = soup.select(".macro-author")[0].getText()
 
-        except requests.exceptions.ConnectionError:
-            print("Connection Error")
+                    macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
+                    macro_instances.append(macro_instance)
 
-        except KeyboardInterrupt:
-            print("\nInterrupted by Keyboard!")
+                return macro_instances
+
+            except requests.exceptions.ConnectionError:
+                print("Please check your network connection!")
+
+            except KeyboardInterrupt:
+                print("\nInterrupted by Keyboard!")
+
+            except ImportError:
+                print("\nMake sure requests and BeautifulSoup are installed!")
 
 #obj = Fetch()
 #obj.getInfo()
