@@ -15,12 +15,8 @@
 
 from __future__ import print_function
 import requests, bs4
-from github import Github
 import re
-import ipdb
-
-# Github API token.
-token = ""
+# import ipdb
 
 class Plugin():
     "Information about plugin."
@@ -61,98 +57,122 @@ class FetchFromGitHub(Fetch):
     "class to get workbenches from GitHub"
 
     def __init__(self):
-        print("git workbenches")
+        print("Fetching GitHub Workbenches")
         # For storing instances of Plugin() class.
         instances = []
 
     def getPluginsList(self):
-        g = Github(token)
 
-        github_username = "FreeCAD"
+        try:
+            from github import Github
 
-        # Name of the repository residing at github_username account.
-        repository = "FreeCAD-addons"
+            # Github API token. Create one at https://github.com/settings/tokens/new
+            # and replace it by "None" below.
+            token = None
+            g = Github(token)
 
-        # Repository instance.
-        repo = g.get_user(github_username).get_repo(repository)
-        print("Fetching repository details...")
+            github_username = "FreeCAD"
 
-        # To store count of number of submodules.
-        count = 0
-        
-        instances = []
+            # Name of the repository residing at github_username account.
+            repository = "FreeCAD-addons"
 
-        # Iterations to fetch submodule entries and their info.
-        for x in repo.get_dir_contents(""):
-            # if(x.type == "submodule"):
-                # print(x.url)
+            try:
+                # Repository instance.
+                repo = g.get_user(github_username).get_repo(repository)
+                print("Fetching repository details...")
 
-            #Checks if the instance is a submodule, then fetches it's details. 
-            if(x.raw_data.get("type") == "submodule"):
-                count += 1
-                submodule_name = x.name
-                print(submodule_name)
+                # To store count of number of submodules.
+                count = 0
 
-                # URL of submodule repository.
-                submodule_url = x.raw_data.get("submodule_git_url")
-               
-                # Getting the owner name and repository name.
-                submodule_repoInfo = re.search('https://github.com/(.+?).git', submodule_url).group(1)
+                instances = []
 
-                git = Github(token)
-                
-                # Submodule information.
-                submodule_repo = git.get_repo(submodule_repoInfo)
-                submodule_author = submodule_repo.owner.name
-                submodule_description = submodule_repo.description
+                # Iterations to fetch submodule entries and their info.
+                for x in repo.get_dir_contents(""):
+                    # if(x.type == "submodule"):
+                        # print(x.url)
 
-                # ipdb.set_trace()
+                    #Checks if the instance is a submodule, then fetches it's details.
+                    if(x.raw_data.get("type") == "submodule"):
+                        count += 1
+                        submodule_name = x.name
+                        print(submodule_name)
 
-                # Creating Plugin class instances.
-                instance = Plugin(submodule_name, submodule_author, submodule_url, submodule_description)
-                instances.append(instance)
-                # print(instances)
+                        # URL of submodule repository.
+                        submodule_url = x.raw_data.get("submodule_git_url")
 
-                # ipdb.set_trace()
-        return instances
+                        # Getting the owner name and repository name.
+                        submodule_repoInfo = re.search('https://github.com/(.+?).git', submodule_url).group(1)
+
+                        git = Github(token)
+
+                        # Submodule information.
+                        submodule_repo = git.get_repo(submodule_repoInfo)
+                        submodule_author = submodule_repo.owner.name
+                        submodule_description = submodule_repo.description
+
+                        # ipdb.set_trace()
+
+                        # Creating Plugin class instances.
+                        instance = Plugin(submodule_name, submodule_author, submodule_url, submodule_description)
+                        instances.append(instance)
+                        # print(instances)
+
+                        # ipdb.set_trace()
+                return instances
+
+            except KeyboardInterrupt:
+                print("\nInterrupted by Keyboard!")
+
+            except:
+                print("Please check your network connection!")
+
+        except ImportError:
+            print("PyGithub isn't installed!")
 
 class FetchFromWiki():
     "fetching macros from wiki"
 
     def __init__(self):
-        print("macros")
+        print("Fetching Macros from FC Wiki")
 
 
     def getPluginsList(self):
         # FreeCAD Macro page.
         source_link = "http://www.freecadweb.org/wiki/index.php?title=Macros_recipes"
 
-        # Generating parsed HTML tree from the URL.
-        req = requests.get(source_link)
-        soup = bs4.BeautifulSoup(req.text, 'html.parser')
+        try:
+            # Generating parsed HTML tree from the URL.
+            req = requests.get(source_link)
+            soup = bs4.BeautifulSoup(req.text, 'html.parser')
 
-        # Selects the spans with class MacroLink enclosing the macro links.
-        macros = soup.select("span.MacroLink")
-        macro_instances = []
-        for macro in macros:
-            # Prints macro name
-            macro_name = macro.a.getText()
+            # Selects the spans with class MacroLink enclosing the macro links.
+            macros = soup.select("span.MacroLink")
+            macro_instances = []
+            for macro in macros:
+                # Prints macro name
+                macro_name = macro.a.getText()
 
-            # Macro URL.
-            macro_url = "http://freecadweb.org" + macro.a.get("href")
-            print(macro_url)
+                # Macro URL.
+                macro_url = "http://freecadweb.org" + macro.a.get("href")
+                print(macro_url)
 
-            macro_page = requests.get(macro_url)
-            soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
-            ipdb.set_trace()
-            # Use the same URL to fetch macro desciption and macro author
-            macro_description = soup.select(".macro-description")[0].getText()
-            macro_author = soup.select(".macro-author")[0].getText()
+                macro_page = requests.get(macro_url)
+                soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
+                # ipdb.set_trace()
+                # Use the same URL to fetch macro desciption and macro author
+                macro_description = soup.select(".macro-description")[0].getText()
+                macro_author = soup.select(".macro-author")[0].getText()
 
-            macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
-            macro_instances.append(macro_instance)
+                macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
+                macro_instances.append(macro_instance)
 
-        return macro_instances
+            return macro_instances
+
+        except requests.exceptions.ConnectionError:
+            print("Connection Error")
+
+        except KeyboardInterrupt:
+            print("\nInterrupted by Keyboard!")
 
 #obj = Fetch()
 #obj.getInfo()
