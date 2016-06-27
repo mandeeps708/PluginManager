@@ -22,12 +22,12 @@ class Plugin():
     "Information about plugin."
     # def __init__(self, name, author, plugin_type, description, baseurl, infourl):
     # def __init__(self, name, author, baseurl, description):
-    def __init__(self, name, baseurl):
+    def __init__(self, name, baseurl, author = None, description = None):
         "returns plugin info"
         self.name = name
-        # self.author = author
+        self.author = author
         self.baseurl = baseurl
-        # self.description = description
+        self.description = description
         # self.plugin_type = plugin_type
         # self.infourl = infourl
 
@@ -65,16 +65,23 @@ class FetchFromGitHub(Fetch):
         # For storing instances of Plugin() class.
         # self.instances = []
         self.instances = {}
+        self.allPlugins = []
+
+    def githubAuth(self):
+        "common function for github authentication"
+
+        from github import Github
+        # Github API token. Create one at https://github.com/settings/tokens/new
+        # and replace it by "None" below.
+        token = None
+        git = Github(token)
+
+        return git
 
     def getPluginsList(self):
 
         try:
-            from github import Github
-
-            # Github API token. Create one at https://github.com/settings/tokens/new
-            # and replace it by "None" below.
-            token = None
-            g = Github(token)
+            git = self.githubAuth()
 
             github_username = "FreeCAD"
 
@@ -82,7 +89,7 @@ class FetchFromGitHub(Fetch):
             repository = "FreeCAD-addons"
 
             # Repository instance.
-            repo = g.get_user(github_username).get_repo(repository)
+            repo = git.get_user(github_username).get_repo(repository)
             print("Fetching repository details...")
 
             # To store count of number of submodules.
@@ -93,17 +100,17 @@ class FetchFromGitHub(Fetch):
             print(repo_content)
 
             # Iterations to fetch submodule entries and their info.
-            for x in repo_content:
-		url = str(x.html_url)
+            for item in repo_content:
+		url = str(item.html_url)
 		try:
 		    gitUrl = re.search('(.+?)/tree', url).group(1)
 		except:
 		    pass
 		else:
-		    print(x.name)
+		    print(item.name)
 		    print(gitUrl)
-                    instance = Plugin(x.name, gitUrl)
-                    self.instances[str(x.name)] = instance
+                    instance = Plugin(item.name, gitUrl)
+                    self.instances[str(item.name)] = instance
 
             # ipdb.set_trace()
             print(self.instances)
@@ -147,12 +154,38 @@ class FetchFromGitHub(Fetch):
         except ImportError:
             print("PyGithub isn't installed!")
 
+        #except GithubException:
+        #    print("API limit exceeded!")
+
         #except:
         #    print("Please check your network connection!")
 
 
-    #def getInfo(PluginName):
+    def getInfo(self, PluginName):
 
+        git = self.githubAuth()
+
+        for x in self.instances.keys():
+            if(x == PluginName):
+                plugin = self.instances[PluginName]
+                print(plugin.name)
+                print(plugin.baseurl)
+                # Getting the owner name and repository name.
+                submodule_repoInfo = re.search('https://github.com/(.+?)$', plugin.baseurl).group(1)
+                submodule_repo = git.get_repo(submodule_repoInfo)
+                submodule_author = submodule_repo.owner.name
+                submodule_description = submodule_repo.description
+                print(submodule_author, submodule_description)
+                # ipdb.set_trace()
+                # import IPython; IPython.embed()
+
+                # Creating Plugin class instances.
+                plugin = Plugin(plugin.name, plugin.baseurl, submodule_author, submodule_description)
+                self.allPlugins.append(plugin)
+                print(self.allPlugins)
+
+                # ipdb.set_trace()
+        return plugin
 
 class FetchFromWiki():
     "fetching macros from wiki"
@@ -163,65 +196,69 @@ class FetchFromWiki():
 
     def getPluginsList(self):
 
-            try:
-                import requests, bs4
+        try:
+            import requests, bs4
 
-                # FreeCAD Macro page.
-                source_link = "http://www.freecadweb.org/wiki/index.php?title=Macros_recipes"
-                # source_link = "http://www.freecadweb.org/wiki/index.php?title=Sandbox:Macro_Recipes"
+            # FreeCAD Macro page.
+            source_link = "http://www.freecadweb.org/wiki/index.php?title=Macros_recipes"
+            # source_link = "http://www.freecadweb.org/wiki/index.php?title=Sandbox:Macro_Recipes"
 
-                # Generating parsed HTML tree from the URL.
-                req = requests.get(source_link, timeout=15)
-                soup = bs4.BeautifulSoup(req.text, 'html.parser')
-                # soup = bs4.BeautifulSoup(open("index.html"), 'html.parser')
+            # Generating parsed HTML tree from the URL.
+            req = requests.get(source_link, timeout=15)
+            soup = bs4.BeautifulSoup(req.text, 'html.parser')
+            # soup = bs4.BeautifulSoup(open("index.html"), 'html.parser')
 
-                # Selects the spans with class MacroLink enclosing the macro links.
-                macros = soup.select("span.MacroLink")
-                macro_count = 0
+            # Selects the spans with class MacroLink enclosing the macro links.
+            macros = soup.select("span.MacroLink")
+            macro_count = 0
 
-                for macro in macros:
-                    # Prints macro name
-                    #ipdb.set_trace()
-                    macro_name = macro.a.getText()
+            for macro in macros[:5]:
+                # Prints macro name
+                # ipdb.set_trace()
+                macro_name = macro.a.getText()
 
-                    try:
-                        # Macro URL.
-                        macro_url = "http://freecadweb.org" + macro.a.get("href")
-                        print(macro_url)
+                try:
+                    # Macro URL.
+                    macro_url = "http://freecadweb.org" + macro.a.get("href")
+                    print(macro_url)
 
-                        macro_page = requests.get(macro_url)
-                        soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
-                        # ipdb.set_trace()
-                        # Use the same URL to fetch macro desciption and macro author
+                    macro_page = requests.get(macro_url)
+                    soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
+                    # ipdb.set_trace()
+                    # Use the same URL to fetch macro desciption and macro author
 
-                        macro_description = soup.select(".macro-description")[0].getText()
-                        macro_author = soup.select(".macro-author")[0].getText()
+                    macro_description = soup.select(".macro-description")[0].getText()
+                    macro_author = soup.select(".macro-author")[0].getText()
 
-                    except IndexError:
-                        print("Macro Information not found! Skipping Macro...")
+                except IndexError:
+                    print("Macro Information not found! Skipping Macro...")
 
-                    else:
-                        # macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
-                        macro_instance = Plugin(macro_name, macro_url)
-                        self.macro_instances.append(macro_instance)
+                else:
+                    # macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
+                    macro_instance = Plugin(macro_name, macro_url)
+                    self.macro_instances.append(macro_instance)
 
-                print(self.macro_instances)
-                return self.macro_instances
+            print(self.macro_instances)
+            return self.macro_instances
 
-            except requests.exceptions.ConnectionError:
-                print("Please check your network connection!")
+        except requests.exceptions.ConnectionError:
+            print("Please check your network connection!")
 
-            except KeyboardInterrupt:
-                print("\nInterrupted by Keyboard!")
+        except KeyboardInterrupt:
+            print("\nInterrupted by Keyboard!")
 
-            except ImportError:
-                print("\nMake sure requests and BeautifulSoup are installed!")
+        except ImportError:
+            print("\nMake sure requests and BeautifulSoup are installed!")
 
 #obj = Fetch()
 #obj.getInfo()
 
-git = FetchFromGitHub()
-plugins = git.getPluginsList()
+gObj = FetchFromGitHub()
+plugins = gObj.getPluginsList()
+
 mac = FetchFromWiki()
 mplugins = mac.getPluginsList()
+
+animation_info = gObj.getInfo("animation")
+sheetmetal_info = gObj.getInfo("sheetmetal")
 # ipdb.set_trace()
