@@ -5,7 +5,7 @@
 
 * File Name : main.py
 
-* Purpose : Contain the base class for plugin manager
+* Purpose : Plugin Manager that fetches plugins from GitHub and FC Wiki
 
 * Creation Date : 06-06-2016
 
@@ -97,7 +97,6 @@ class FetchFromGitHub(Fetch):
 
             # Fetching repository contents.
             repo_content = repo.get_dir_contents("")
-            print(repo_content)
 
             # Iterations to fetch submodule entries and their info.
             for item in repo_content:
@@ -113,7 +112,7 @@ class FetchFromGitHub(Fetch):
                     self.instances[str(item.name)] = instance
 
             # ipdb.set_trace()
-            print(self.instances)
+            print("\nPlugins: ", self.instances)
             
             """
                 ######## Some slow code ########
@@ -170,7 +169,8 @@ class FetchFromGitHub(Fetch):
                 plugin = self.instances[PluginName]
                 print(plugin.name)
                 print(plugin.baseurl)
-                # Getting the owner name and repository name.
+
+                # Getting the submodule info like author, description.
                 submodule_repoInfo = re.search('https://github.com/(.+?)$', plugin.baseurl).group(1)
                 submodule_repo = git.get_repo(submodule_repoInfo)
                 submodule_author = submodule_repo.owner.name
@@ -193,6 +193,7 @@ class FetchFromWiki():
     def __init__(self):
         print("Fetching Macros from FC Wiki")
         self.macro_instances = []
+        self.all_macros = []
 
     def getPluginsList(self):
 
@@ -217,29 +218,12 @@ class FetchFromWiki():
                 # ipdb.set_trace()
                 macro_name = macro.a.getText()
 
-                try:
-                    # Macro URL.
-                    macro_url = "http://freecadweb.org" + macro.a.get("href")
-                    print(macro_url)
+                # Macro URL.
+                macro_url = "http://freecadweb.org" + macro.a.get("href")
+                print(macro_name, macro_url)
+                macro_instance = Plugin(macro_name, macro_url)
+                self.macro_instances.append(macro_instance)
 
-                    macro_page = requests.get(macro_url)
-                    soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
-                    # ipdb.set_trace()
-                    # Use the same URL to fetch macro desciption and macro author
-
-                    macro_description = soup.select(".macro-description")[0].getText()
-                    macro_author = soup.select(".macro-author")[0].getText()
-
-                except IndexError:
-                    print("Macro Information not found! Skipping Macro...")
-
-                else:
-                    # macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
-                    macro_instance = Plugin(macro_name, macro_url)
-                    self.macro_instances.append(macro_instance)
-
-            print(self.macro_instances)
-            return self.macro_instances
 
         except requests.exceptions.ConnectionError:
             print("Please check your network connection!")
@@ -250,15 +234,52 @@ class FetchFromWiki():
         except ImportError:
             print("\nMake sure requests and BeautifulSoup are installed!")
 
+        print("\nPlugins:", self.macro_instances)
+        return self.macro_instances
+
+
+    def getInfo(self, PluginName):
+        "getting info about macros"
+
+        try:
+            import requests, bs4
+
+            for macro in self.macro_instances:
+                if(macro.name == PluginName):
+
+                    macro_page = requests.get(macro.baseurl)
+                    soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
+                    # ipdb.set_trace()
+                    # Use the same URL to fetch macro desciption and macro author
+
+                    macro_description = soup.select(".macro-description")[0].getText()
+                    macro_author = soup.select(".macro-author")[0].getText()
+
+        except IndexError:
+            print("Macro Information not found! Skipping Macro...")
+
+        else:
+            # macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
+            plugin = Plugin(macro.name, macro.baseurl, macro_author, macro_description)
+            self.all_macros.append(plugin)
+            # print(plugin.author)
+
+        return plugin
+
+
 #obj = Fetch()
 #obj.getInfo()
 
+print("\n================ GitHub Workbenches ================\n")
 gObj = FetchFromGitHub()
 plugins = gObj.getPluginsList()
 
+print("\n================ Macros ================\n")
 mac = FetchFromWiki()
 mplugins = mac.getPluginsList()
 
-animation_info = gObj.getInfo("animation")
-sheetmetal_info = gObj.getInfo("sheetmetal")
+makeCube_info = mac.getInfo("Macro Make Cube")
+
+# animation_info = gObj.getInfo("animation")
+# sheetmetal_info = gObj.getInfo("sheetmetal")
 # ipdb.set_trace()
