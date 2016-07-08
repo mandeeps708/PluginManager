@@ -16,8 +16,10 @@
 from __future__ import print_function
 import main
 
-plugins = main.getPlugins()
+obj = main.getAllPlugins()
+plugins = obj.allPlugins()
 
-for plugin in plugins:
-    print(plugin.name)
+for index, plugin in enumerate(plugins):
+    print(index, plugin.name)
     print(plugin.baseurl)
+# plugins[0]

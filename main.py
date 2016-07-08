@@ -106,13 +106,14 @@ class FetchFromGitHub(Fetch):
 		except:
 		    pass
 		else:
-		    print(item.name)
-		    print(gitUrl)
+		    # print(item.name)
+		    # print(gitUrl)
                     instance = Plugin(item.name, gitUrl)
                     self.instances[str(item.name)] = instance
 
             # ipdb.set_trace()
-            print("\nPlugins: ", self.instances)
+            # print("\nPlugins: ", self.instances)
+            return self.instances.values()
             
             """
                 ######## Some slow code ########
@@ -220,7 +221,7 @@ class FetchFromWiki():
 
                 # Macro URL.
                 macro_url = "http://freecadweb.org" + macro.a.get("href")
-                print(macro_name, macro_url)
+                # print(macro_name, macro_url)
                 macro_instance = Plugin(macro_name, macro_url)
                 self.macro_instances.append(macro_instance)
 
@@ -234,7 +235,8 @@ class FetchFromWiki():
         except ImportError:
             print("\nMake sure requests and BeautifulSoup are installed!")
 
-        print("\nPlugins:", self.macro_instances)
+        # print("\nPlugins:", self.macro_instances)
+        # ipdb.set_trace()
         return self.macro_instances
 
 
@@ -264,12 +266,14 @@ class FetchFromWiki():
             self.all_macros.append(plugin)
             # print(plugin.author)
 
+        # ipdb.set_trace()
         return plugin
 
 
 #obj = Fetch()
 #obj.getInfo()
 
+"""
 print("\n================ GitHub Workbenches ================\n")
 gObj = FetchFromGitHub()
 plugins = gObj.getPluginsList()
@@ -279,7 +283,26 @@ mac = FetchFromWiki()
 mplugins = mac.getPluginsList()
 
 makeCube_info = mac.getInfo("Macro Make Cube")
+"""
 
 # animation_info = gObj.getInfo("animation")
 # sheetmetal_info = gObj.getInfo("sheetmetal")
 # ipdb.set_trace()
+
+
+class getAllPlugins():
+    "Interface to manage all plugins"
+
+    def __init__(self):
+        gObj = FetchFromGitHub()
+        self.plugins = gObj.getPluginsList()
+        mac = FetchFromWiki()
+        self.mplugins = mac.getPluginsList()
+
+    def allPlugins(self):
+        # ipdb.set_trace()
+        allPlugins = self.plugins + self.mplugins
+        return allPlugins
+
+# plugin = getAllPlugins()
+# plugin.allPlugins()
