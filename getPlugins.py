@@ -15,11 +15,16 @@
 
 from __future__ import print_function
 import main
+import ipdb
 
 obj = main.getAllPlugins()
 plugins = obj.allPlugins()
+
+obj.install(plugins[0])
 
 for index, plugin in enumerate(plugins):
     print(index, plugin.name)
     print(plugin.baseurl)
 # plugins[0]
+
+ipdb.set_trace()

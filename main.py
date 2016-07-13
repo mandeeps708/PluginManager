@@ -16,25 +16,25 @@
 from __future__ import print_function
 import re
 from socket import gaierror
-# import ipdb
+import ipdb
 
 class Plugin():
     "Information about plugin."
     # def __init__(self, name, author, plugin_type, description, baseurl, infourl):
     # def __init__(self, name, author, baseurl, description):
-    def __init__(self, name, baseurl, author = None, description = None):
+    def __init__(self, name, baseurl, plugin_type, author = None, description = None):
         "returns plugin info"
         self.name = name
         self.author = author
         self.baseurl = baseurl
         self.description = description
-        # self.plugin_type = plugin_type
+        self.plugin_type = plugin_type
         # self.infourl = infourl
 
     def __repr__(self):
         return 'Plugin(%s)' % (self.name)
 
-class Fetch():
+class Fetch(object):
     "The base fetch class"
 
     def __init__(self):
@@ -66,6 +66,7 @@ class FetchFromGitHub(Fetch):
         # self.instances = []
         self.instances = {}
         self.allPlugins = []
+        self.plugin_type = "Workbench"
 
     def githubAuth(self):
         "common function for github authentication"
@@ -108,7 +109,7 @@ class FetchFromGitHub(Fetch):
 		else:
 		    # print(item.name)
 		    # print(gitUrl)
-                    instance = Plugin(item.name, gitUrl)
+                    instance = Plugin(item.name, gitUrl, self.plugin_type)
                     self.instances[str(item.name)] = instance
 
             # ipdb.set_trace()
@@ -176,25 +177,30 @@ class FetchFromGitHub(Fetch):
                 submodule_repo = git.get_repo(submodule_repoInfo)
                 submodule_author = submodule_repo.owner.name
                 submodule_description = submodule_repo.description
-                print(submodule_author, submodule_description)
+                # print(submodule_author, submodule_description)
                 # ipdb.set_trace()
                 # import IPython; IPython.embed()
 
                 # Creating Plugin class instances.
-                plugin = Plugin(plugin.name, plugin.baseurl, submodule_author, submodule_description)
+                plugin = Plugin(plugin.name, plugin.baseurl, self.plugin_type, submodule_author, submodule_description)
                 self.allPlugins.append(plugin)
                 print(self.allPlugins)
 
                 # ipdb.set_trace()
         return plugin
 
-class FetchFromWiki():
+    def install(self, plugin):
+        print("Installing...")
+        print(plugin.name)
+
+class FetchFromWiki(Fetch):
     "fetching macros from wiki"
 
     def __init__(self):
         print("Fetching Macros from FC Wiki")
         self.macro_instances = []
         self.all_macros = []
+        self.plugin_type = "Macro"
 
     def getPluginsList(self):
 
@@ -222,7 +228,7 @@ class FetchFromWiki():
                 # Macro URL.
                 macro_url = "http://freecadweb.org" + macro.a.get("href")
                 # print(macro_name, macro_url)
-                macro_instance = Plugin(macro_name, macro_url)
+                macro_instance = Plugin(macro_name, macro_url, self.plugin_type)
                 self.macro_instances.append(macro_instance)
 
 
@@ -262,7 +268,7 @@ class FetchFromWiki():
 
         else:
             # macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
-            plugin = Plugin(macro.name, macro.baseurl, macro_author, macro_description)
+            plugin = Plugin(macro.name, macro.baseurl, self.plugin_type, macro_author, macro_description)
             self.all_macros.append(plugin)
             # print(plugin.author)
 
@@ -290,19 +296,23 @@ makeCube_info = mac.getInfo("Macro Make Cube")
 # ipdb.set_trace()
 
 
-class getAllPlugins():
+class getAllPlugins(FetchFromGitHub, FetchFromWiki):
     "Interface to manage all plugins"
 
     def __init__(self):
+        # ipdb.set_trace()
         gObj = FetchFromGitHub()
-        self.plugins = gObj.getPluginsList()
+        self.gplugins = gObj.getPluginsList()
         mac = FetchFromWiki()
         self.mplugins = mac.getPluginsList()
 
     def allPlugins(self):
         # ipdb.set_trace()
-        allPlugins = self.plugins + self.mplugins
+        allPlugins = self.gplugins + self.mplugins
         return allPlugins
+
+    def info(self, pluginname):
+        super(getAllPlugins, self).getInfo(self)
 
 # plugin = getAllPlugins()
 # plugin.allPlugins()
