@@ -16,7 +16,7 @@
 from __future__ import print_function
 import re
 from socket import gaierror
-import ipdb
+# import ipdb
 
 class Plugin():
     "Information about plugin."
@@ -65,7 +65,7 @@ class FetchFromGitHub(Fetch):
         # For storing instances of Plugin() class.
         # self.instances = []
         self.instances = {}
-        self.allPlugins = []
+        self.gitPlugins = []
         self.plugin_type = "Workbench"
 
     def githubAuth(self):
@@ -183,8 +183,8 @@ class FetchFromGitHub(Fetch):
 
                 # Creating Plugin class instances.
                 plugin = Plugin(plugin.name, plugin.baseurl, self.plugin_type, submodule_author, submodule_description)
-                self.allPlugins.append(plugin)
-                print(self.allPlugins)
+                self.gitPlugins.append(plugin)
+                print(self.gitPlugins)
 
                 # ipdb.set_trace()
         return plugin
@@ -301,10 +301,11 @@ class getAllPlugins(FetchFromGitHub, FetchFromWiki):
 
     def __init__(self):
         # ipdb.set_trace()
-        gObj = FetchFromGitHub()
-        self.gplugins = gObj.getPluginsList()
+        self.gObj = FetchFromGitHub()
+        self.gplugins = self.gObj.getPluginsList()
         mac = FetchFromWiki()
         self.mplugins = mac.getPluginsList()
+        FetchFromGitHub.__init__(self)
 
     def allPlugins(self):
         # ipdb.set_trace()
@@ -312,7 +313,13 @@ class getAllPlugins(FetchFromGitHub, FetchFromWiki):
         return allPlugins
 
     def info(self, pluginname):
-        super(getAllPlugins, self).getInfo(self)
+        # ipdb.set_trace()
+        # import IPython; IPython.embed()
+        # details = FetchFromGithub()
+        print("\nGetting information about ", pluginname, "...")
+        return self.gObj.getInfo(pluginname)
+        # Todo: Check the plugin_type then decide which function to call (of which class).
+        # super(getAllPlugins, self).getInfo(self)
 
 # plugin = getAllPlugins()
 # plugin.allPlugins()

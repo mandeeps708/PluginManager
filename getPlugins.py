@@ -15,16 +15,18 @@
 
 from __future__ import print_function
 import main
-import ipdb
+# import ipdb
 
 obj = main.getAllPlugins()
+# ipdb.set_trace()
 plugins = obj.allPlugins()
 
 obj.install(plugins[0])
+obj.info("animation")
 
 for index, plugin in enumerate(plugins):
     print(index, plugin.name)
     print(plugin.baseurl)
 # plugins[0]
 
-ipdb.set_trace()
+# ipdb.set_trace()
