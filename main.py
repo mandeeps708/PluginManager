@@ -160,8 +160,13 @@ class FetchFromGitHub(Fetch):
         return plugin
 
     def install(self, plugin):
-        print("Installing...")
-        print(plugin.name)
+        "Installs a plugin"
+
+        print("Installing...", plugin.name)
+        import git
+        git.Git().clone(str(plugin.baseurl))
+        print("Done!")
+
 
 class FetchFromWiki(Fetch):
     "fetching macros from wiki"
