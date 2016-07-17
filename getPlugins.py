@@ -23,10 +23,14 @@ plugins = obj.allPlugins()
 
 obj.install(plugins[0])
 obj.info("animation")
+obj.info("workfeature")
+obj.info("Macro Rectellipse")
 
+"""
 for index, plugin in enumerate(plugins):
     print(index, plugin.name)
     print(plugin.baseurl)
-# plugins[0]
+"""
 
+# plugins[0]
 # ipdb.set_trace()

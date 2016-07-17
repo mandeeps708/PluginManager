@@ -103,7 +103,7 @@ class FetchFromGitHub(Fetch):
             for item in repo_content:
 		url = str(item.html_url)
 		try:
-		    gitUrl = re.search('(.+?)/tree', url).group(1)
+                    gitUrl = re.search('(.+?)/tree', url).group(1)
 		except:
 		    pass
 		else:
@@ -116,36 +116,6 @@ class FetchFromGitHub(Fetch):
             # print("\nPlugins: ", self.instances)
             return self.instances.values()
             
-            """
-                ######## Some slow code ########
-                #Checks if the instance is a submodule, then fetches it's details.
-                if(x.raw_data.get("type") == "submodule"):
-                    count += 1
-                    submodule_name = x.name
-                    print(submodule_name)
-
-                    # URL of submodule repository.
-                    submodule_url = x.raw_data.get("submodule_git_url")
-
-                    # Getting the owner name and repository name.
-                    submodule_repoInfo = re.search('https://github.com/(.+?).git', submodule_url).group(1)
-                    
-                    git = Github(token)
-                    # Submodule information.
-                    submodule_repo = git.get_repo(submodule_repoInfo)
-                    submodule_author = submodule_repo.owner.name
-                    submodule_description = submodule_repo.description
-
-                    # ipdb.set_trace()
-
-                    # Creating Plugin class instances.
-                    instance = Plugin(submodule_name, submodule_author, submodule_url, submodule_description)
-                    instances.append(instance)
-                    # print(instances)
-
-                    # ipdb.set_trace()
-                    return instances
-            """
         except gaierror or timeout:
             print("Please check your network connection!")
 
@@ -303,23 +273,37 @@ class getAllPlugins(FetchFromGitHub, FetchFromWiki):
         # ipdb.set_trace()
         self.gObj = FetchFromGitHub()
         self.gplugins = self.gObj.getPluginsList()
-        mac = FetchFromWiki()
-        self.mplugins = mac.getPluginsList()
+        self.mac = FetchFromWiki()
+        self.mplugins = self.mac.getPluginsList()
+
+        self.totalPlugins = None
+        self.information = None
         FetchFromGitHub.__init__(self)
+        FetchFromWiki.__init__(self)
 
     def allPlugins(self):
         # ipdb.set_trace()
-        allPlugins = self.gplugins + self.mplugins
-        return allPlugins
+        self.totalPlugins = self.gplugins + self.mplugins
+        return self.totalPlugins
 
     def info(self, pluginname):
         # ipdb.set_trace()
         # import IPython; IPython.embed()
-        # details = FetchFromGithub()
-        print("\nGetting information about ", pluginname, "...")
-        return self.gObj.getInfo(pluginname)
+        for x in self.totalPlugins:
+            if(str(x.name) == pluginname):
+                if(x.plugin_type == "Macro"):
+                    print("\nGetting information about", pluginname, "...")
+                    print(self.mac.getInfo(pluginname))
+
+                elif(x.plugin_type == "Workbench"):
+                    # details = FetchFromGithub()
+                    print("\nGetting information about", pluginname, "...")
+                    print(self.gObj.getInfo(pluginname))
+
+
+        # return self.gObj.getInfo(pluginname)
         # Todo: Check the plugin_type then decide which function to call (of which class).
         # super(getAllPlugins, self).getInfo(self)
 
 # plugin = getAllPlugins()
-# plugin.allPlugins()
+# plugin.totalPlugins()
