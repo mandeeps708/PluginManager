@@ -16,7 +16,7 @@
 from __future__ import print_function
 import re
 from socket import gaierror
-# import ipdb
+import ipdb
 
 class Plugin():
     "Information about plugin."
@@ -29,6 +29,7 @@ class Plugin():
         self.baseurl = baseurl
         self.description = description
         self.plugin_type = plugin_type
+        self.fetch = self
         # self.infourl = infourl
 
     def __repr__(self):
@@ -44,8 +45,8 @@ class Fetch(object):
     def getPluginsList(self):
         print("Plugins list")
 
-    def getInfo(self):
-        print("Plugin Info")
+    def getInfo(self, plugin):
+        return plugin
 
     def isInstalled(self):
         print("If installed or not")
@@ -69,7 +70,7 @@ class FetchFromGitHub(Fetch):
         self.plugin_type = "Workbench"
 
     def githubAuth(self):
-        "common function for github authentication"
+        "A common function for github authentication"
 
         from github import Github
         # Github API token. Create one at https://github.com/settings/tokens/new
@@ -80,6 +81,7 @@ class FetchFromGitHub(Fetch):
         return git
 
     def getPluginsList(self):
+        "Get a list of GitHub Plugins"
 
         try:
             git = self.githubAuth()
@@ -110,6 +112,7 @@ class FetchFromGitHub(Fetch):
 		    # print(item.name)
 		    # print(gitUrl)
                     instance = Plugin(item.name, gitUrl, self.plugin_type)
+                    instance.fetch = self
                     self.instances[str(item.name)] = instance
 
             # ipdb.set_trace()
@@ -132,32 +135,33 @@ class FetchFromGitHub(Fetch):
         #    print("Please check your network connection!")
 
 
-    def getInfo(self, PluginName):
-
+    def getInfo(self, targetPlugin):
+        "Get additional information about a specific plugin."
         git = self.githubAuth()
 
-        for x in self.instances.keys():
-            if(x == PluginName):
-                plugin = self.instances[PluginName]
-                print(plugin.name)
-                print(plugin.baseurl)
-
+        # ipdb.set_trace()
+        list = self.getPluginsList()
+        # Check if a plugin is present in the plugin list.
+        for instance in self.instances.values():
+            if(targetPlugin.name == instance.name):
                 # Getting the submodule info like author, description.
-                submodule_repoInfo = re.search('https://github.com/(.+?)$', plugin.baseurl).group(1)
+                submodule_repoInfo = re.search('https://github.com/(.+?)$', instance.baseurl).group(1)
                 submodule_repo = git.get_repo(submodule_repoInfo)
-                submodule_author = submodule_repo.owner.name
+                # submodule_author = submodule_repo.owner.name
+                submodule_author = submodule_repo.owner.login
                 submodule_description = submodule_repo.description
                 # print(submodule_author, submodule_description)
                 # ipdb.set_trace()
                 # import IPython; IPython.embed()
 
                 # Creating Plugin class instances.
-                plugin = Plugin(plugin.name, plugin.baseurl, self.plugin_type, submodule_author, submodule_description)
-                self.gitPlugins.append(plugin)
-                print(self.gitPlugins)
+                print(instance.name, "\n", instance.baseurl, "\n", self.plugin_type, "\n",  submodule_author, "\n", submodule_description)
+                workbench = Plugin(instance.name, instance.baseurl, self.plugin_type, submodule_author, submodule_description)
+                self.gitPlugins.append(workbench)
+                break
 
                 # ipdb.set_trace()
-        return plugin
+        return workbench
 
     def install(self, plugin):
         "Installs a plugin"
@@ -204,6 +208,7 @@ class FetchFromWiki(Fetch):
                 macro_url = "http://freecadweb.org" + macro.a.get("href")
                 # print(macro_name, macro_url)
                 macro_instance = Plugin(macro_name, macro_url, self.plugin_type)
+                macro_instance.fetch = self
                 self.macro_instances.append(macro_instance)
 
 
@@ -221,14 +226,14 @@ class FetchFromWiki(Fetch):
         return self.macro_instances
 
 
-    def getInfo(self, PluginName):
+    def getInfo(self, targetPlugin):
         "getting info about macros"
 
         try:
             import requests, bs4
 
             for macro in self.macro_instances:
-                if(macro.name == PluginName):
+                if(macro == targetPlugin):
 
                     macro_page = requests.get(macro.baseurl)
                     soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
@@ -271,7 +276,7 @@ makeCube_info = mac.getInfo("Macro Make Cube")
 # ipdb.set_trace()
 
 
-class getAllPlugins(FetchFromGitHub, FetchFromWiki):
+class getAllPlugins():
     "Interface to manage all plugins"
 
     def __init__(self):
@@ -283,27 +288,22 @@ class getAllPlugins(FetchFromGitHub, FetchFromWiki):
 
         self.totalPlugins = None
         self.information = None
-        FetchFromGitHub.__init__(self)
-        FetchFromWiki.__init__(self)
+        self.gObj.__init__()
+        self.mac.__init__()
 
     def allPlugins(self):
         # ipdb.set_trace()
         self.totalPlugins = self.gplugins + self.mplugins
         return self.totalPlugins
 
-    def info(self, pluginname):
+    def info(self, targetPlugin):
         # ipdb.set_trace()
         # import IPython; IPython.embed()
         for x in self.totalPlugins:
-            if(str(x.name) == pluginname):
-                if(x.plugin_type == "Macro"):
-                    print("\nGetting information about", pluginname, "...")
-                    print(self.mac.getInfo(pluginname))
-
-                elif(x.plugin_type == "Workbench"):
-                    # details = FetchFromGithub()
-                    print("\nGetting information about", pluginname, "...")
-                    print(self.gObj.getInfo(pluginname))
+            if(x == targetPlugin):
+                print("\nGetting information about", targetPlugin, "...")
+                # ipdb.set_trace()
+                x.fetch.getInfo(targetPlugin)
 
 
         # return self.gObj.getInfo(pluginname)

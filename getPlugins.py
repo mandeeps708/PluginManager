@@ -15,16 +15,17 @@
 
 from __future__ import print_function
 import main
-# import ipdb
+import ipdb
 
 obj = main.getAllPlugins()
-# ipdb.set_trace()
 plugins = obj.allPlugins()
+# ipdb.set_trace()
+obj.info(plugins[2])
 
-obj.install(plugins[0])
-obj.info("animation")
-obj.info("workfeature")
-obj.info("Macro Rectellipse")
+# obj.install(plugins[0])
+# obj.info("animation")
+# obj.info("workfeature")
+# obj.info("Macro Rectellipse")
 
 """
 for index, plugin in enumerate(plugins):
