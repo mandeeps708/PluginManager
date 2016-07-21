@@ -17,7 +17,7 @@ from __future__ import print_function
 import main
 # import ipdb
 
-obj = main.getAllPlugins()
+obj = main.PluginManager()
 plugins = obj.allPlugins()
 # ipdb.set_trace()
 obj.info(plugins[2])

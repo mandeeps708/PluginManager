@@ -275,7 +275,7 @@ makeCube_info = mac.getInfo("Macro Make Cube")
 # ipdb.set_trace()
 
 
-class getAllPlugins():
+class PluginManager():
     "Interface to manage all plugins"
 
     def __init__(self):
@@ -301,11 +301,3 @@ class getAllPlugins():
                 print("\nGetting information about", targetPlugin, "...")
                 # ipdb.set_trace()
                 x.fetch.getInfo(targetPlugin)
-
-
-        # return self.gObj.getInfo(pluginname)
-        # Todo: Check the plugin_type then decide which function to call (of which class).
-        # super(getAllPlugins, self).getInfo(self)
-
-# plugin = getAllPlugins()
-# plugin.totalPlugins()
