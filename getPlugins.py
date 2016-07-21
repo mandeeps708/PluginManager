@@ -14,24 +14,18 @@
 """
 
 from __future__ import print_function
-import main
+import pluginManager
 # import ipdb
 
-obj = main.PluginManager()
+obj = pluginManager.PluginManager()
 plugins = obj.allPlugins()
 # ipdb.set_trace()
 obj.info(plugins[2])
 
 # obj.install(plugins[0])
-# obj.info("animation")
-# obj.info("workfeature")
-# obj.info("Macro Rectellipse")
 
 """
 for index, plugin in enumerate(plugins):
     print(index, plugin.name)
     print(plugin.baseurl)
 """
-
-# plugins[0]
-# ipdb.set_trace()

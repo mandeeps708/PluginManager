@@ -3,7 +3,7 @@
 
 """
 
-* File Name : main.py
+* File Name : pluginManger.py
 
 * Purpose : Plugin Manager that fetches plugins from GitHub and FC Wiki
 
@@ -287,7 +287,6 @@ class PluginManager():
         except:
             print("Please check the connection!")
             exit()
-        self.information = None
 
     def allPlugins(self):
         # ipdb.set_trace()
