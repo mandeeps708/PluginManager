@@ -16,7 +16,7 @@
 from __future__ import print_function
 import re
 from socket import gaierror
-import ipdb
+# import ipdb
 
 class Plugin():
     "Information about plugin."
@@ -140,7 +140,6 @@ class FetchFromGitHub(Fetch):
         git = self.githubAuth()
 
         # ipdb.set_trace()
-        list = self.getPluginsList()
         # Check if a plugin is present in the plugin list.
         for instance in self.instances.values():
             if(targetPlugin.name == instance.name):
@@ -281,19 +280,17 @@ class getAllPlugins():
 
     def __init__(self):
         # ipdb.set_trace()
-        self.gObj = FetchFromGitHub()
-        self.gplugins = self.gObj.getPluginsList()
-        self.mac = FetchFromWiki()
-        self.mplugins = self.mac.getPluginsList()
-
-        self.totalPlugins = None
+        gObj = FetchFromGitHub()
+        mac = FetchFromWiki()
+        try:
+            self.totalPlugins = gObj.getPluginsList() + mac.getPluginsList()
+        except:
+            print("Please check the connection!")
+            exit()
         self.information = None
-        self.gObj.__init__()
-        self.mac.__init__()
 
     def allPlugins(self):
         # ipdb.set_trace()
-        self.totalPlugins = self.gplugins + self.mplugins
         return self.totalPlugins
 
     def info(self, targetPlugin):
