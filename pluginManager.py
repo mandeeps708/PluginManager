@@ -3,7 +3,7 @@
 
 """
 
-* File Name : pluginManger.py
+* File Name : pluginManager.py
 
 * Purpose : Plugin Manager that fetches plugins from GitHub and FC Wiki
 
@@ -248,6 +248,7 @@ class FetchFromWiki(Fetch):
         else:
             # macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
             plugin = Plugin(macro.name, macro.baseurl, self.plugin_type, macro_author, macro_description)
+            print(plugin.name, "\n", plugin.baseurl, "\n", self.plugin_type, "\n",  macro_author, "\n", macro_description)
             self.all_macros.append(plugin)
             # print(plugin.author)
 
@@ -295,8 +296,10 @@ class PluginManager():
     def info(self, targetPlugin):
         # ipdb.set_trace()
         # import IPython; IPython.embed()
-        for x in self.totalPlugins:
-            if(x == targetPlugin):
-                print("\nGetting information about", targetPlugin, "...")
-                # ipdb.set_trace()
-                x.fetch.getInfo(targetPlugin)
+        if targetPlugin in self.totalPlugins:
+            print("\nGetting information about", targetPlugin, "...")
+            # ipdb.set_trace()
+            targetPlugin.fetch.getInfo(targetPlugin)
+
+    def install(self, targetPlugin):
+        pass
