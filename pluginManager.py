@@ -302,4 +302,5 @@ class PluginManager():
             targetPlugin.fetch.getInfo(targetPlugin)
 
     def install(self, targetPlugin):
-        pass
+        if targetPlugin in self.totalPlugins:
+            targetPlugin.fetch.install(targetPlugin)
