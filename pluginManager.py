@@ -14,8 +14,11 @@
 """
 
 from __future__ import print_function
-import re
+import re, os
 from socket import gaierror
+# Guide to import FreeCAD: 
+# https://mandeep7.wordpress.com/2016/07/23/import-freecad-in-python/
+import FreeCAD
 # import ipdb
 
 class Plugin():
@@ -30,11 +33,11 @@ class Plugin():
         self.description = description
         self.plugin_type = plugin_type
         self.fetch = self
+        self.plugin_dir = None
         # self.infourl = infourl
 
     def __repr__(self):
         return 'Plugin(%s)' % (self.name)
-
 class Fetch(object):
     "The base fetch class"
 
@@ -68,6 +71,7 @@ class FetchFromGitHub(Fetch):
         self.instances = {}
         self.gitPlugins = []
         self.plugin_type = "Workbench"
+        self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Mod")
 
     def githubAuth(self):
         "A common function for github authentication"
@@ -136,7 +140,7 @@ class FetchFromGitHub(Fetch):
 
 
     def getInfo(self, targetPlugin):
-        "Get additional information about a specific plugin."
+        "Get additional information about a specific plugin (GitHub)."
         git = self.githubAuth()
 
         # ipdb.set_trace()
@@ -163,16 +167,28 @@ class FetchFromGitHub(Fetch):
         return workbench
 
     def install(self, plugin):
-        "Installs a plugin"
+        "Installs a GitHub plugin"
 
         print("Installing...", plugin.name)
         import git
-        git.Git().clone(str(plugin.baseurl))
-        print("Done!")
+
+        install_dir = os.path.join(self.plugin_dir, plugin.name)
+
+        # Clone the GitHub repository via the URL.
+        # git.Git().clone(str(plugin.baseurl), install_dir)
+
+        # Checks if the plugin installation path already exists.
+        if not os.path.exists(install_dir):
+            # Clone the GitHub repository via Plugin URL to install_dir and with depth=1 (shallow clone).
+            git.Repo.clone_from(plugin.baseurl, install_dir, depth=1)
+            print("Done!")
+
+        else:
+            print("Plugin already installed!")
 
 
 class FetchFromWiki(Fetch):
-    "fetching macros from wiki"
+    "Fetching macros listed on the FreeCAD Wiki"
 
     def __init__(self):
         print("Fetching Macros from FC Wiki")
@@ -181,7 +197,7 @@ class FetchFromWiki(Fetch):
         self.plugin_type = "Macro"
 
     def getPluginsList(self):
-
+        "Get a list of plugins available on the FreeCAD Wiki"
         try:
             import requests, bs4
 
@@ -226,7 +242,7 @@ class FetchFromWiki(Fetch):
 
 
     def getInfo(self, targetPlugin):
-        "getting info about macros"
+        "Getting additional information about a plugin (macro)"
 
         try:
             import requests, bs4
@@ -277,7 +293,7 @@ makeCube_info = mac.getInfo("Macro Make Cube")
 
 
 class PluginManager():
-    "Interface to manage all plugins"
+    "An interface to manage all plugins"
 
     def __init__(self):
         # ipdb.set_trace()
@@ -288,12 +304,16 @@ class PluginManager():
         except:
             print("Please check the connection!")
             exit()
+        self.macro_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Macro")
+        self.workbench_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Mod")
 
     def allPlugins(self):
+        "Returns all of the available plugins"
         # ipdb.set_trace()
         return self.totalPlugins
 
     def info(self, targetPlugin):
+        "Get additional information about a plugin"
         # ipdb.set_trace()
         # import IPython; IPython.embed()
         if targetPlugin in self.totalPlugins:
@@ -302,5 +322,6 @@ class PluginManager():
             targetPlugin.fetch.getInfo(targetPlugin)
 
     def install(self, targetPlugin):
+        "Install a plugin"
         if targetPlugin in self.totalPlugins:
             targetPlugin.fetch.install(targetPlugin)
