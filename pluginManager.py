@@ -195,6 +195,7 @@ class FetchFromWiki(Fetch):
         self.macro_instances = []
         self.all_macros = []
         self.plugin_type = "Macro"
+        self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Macro")
 
     def getPluginsList(self):
         "Get a list of plugins available on the FreeCAD Wiki"
@@ -240,6 +241,22 @@ class FetchFromWiki(Fetch):
         # ipdb.set_trace()
         return self.macro_instances
 
+    def macroWeb(self, targetPlugin):
+        "Returns the parsed Macro Web page object. Separated, to be used by another functions."
+
+        try:
+            import requests, bs4
+
+            if targetPlugin in self.macro_instances:
+                macro_page = requests.get(targetPlugin.baseurl)
+                soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
+                return soup
+            else:
+                print("Unknown Plugin!", targetPlugin)
+
+        except requests.exceptions.ConnectionError:
+            print("Please check your network connection!")
+
 
     def getInfo(self, targetPlugin):
         "Getting additional information about a plugin (macro)"
@@ -247,23 +264,20 @@ class FetchFromWiki(Fetch):
         try:
             import requests, bs4
 
-            for macro in self.macro_instances:
-                if(macro == targetPlugin):
+            # ipdb.set_trace()
+            # import IPython; IPython.embed()
 
-                    macro_page = requests.get(macro.baseurl)
-                    soup = bs4.BeautifulSoup(macro_page.text, 'html.parser')
-                    # ipdb.set_trace()
-                    # Use the same URL to fetch macro desciption and macro author
-
-                    macro_description = soup.select(".macro-description")[0].getText()
-                    macro_author = soup.select(".macro-author")[0].getText()
+            # Use the same URL to fetch macro desciption and macro author
+            macro = self.macroWeb(targetPlugin)
+            macro_description = macro.select(".macro-description")[0].getText()
+            macro_author = macro.select(".macro-author")[0].getText()
 
         except IndexError:
             print("Macro Information not found! Skipping Macro...")
 
         else:
             # macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
-            plugin = Plugin(macro.name, macro.baseurl, self.plugin_type, macro_author, macro_description)
+            plugin = Plugin(targetPlugin.name, targetPlugin.baseurl, self.plugin_type, macro_author, macro_description)
             print(plugin.name, "\n", plugin.baseurl, "\n", self.plugin_type, "\n",  macro_author, "\n", macro_description)
             self.all_macros.append(plugin)
             # print(plugin.author)
@@ -271,6 +285,28 @@ class FetchFromWiki(Fetch):
         # ipdb.set_trace()
         return plugin
 
+    def install(self, targetPlugin):
+        "Installs the Macro"
+
+        print("Installing...", targetPlugin.name)
+        install_dir = os.path.join(self.plugin_dir, targetPlugin.name + ".FCMacro")
+
+        macro = self.macroWeb(targetPlugin)
+        macro_code = macro.select(".mw-highlight.mw-content-ltr")[0].getText()
+        #try:
+        # Checks if the plugin installation path already exists.
+        if not os.path.exists(install_dir):
+            macro_file = open(install_dir, 'w+')
+            macro_file.write(macro_code)
+            macro_file.close()
+            print("Done!")
+
+        else:
+            print("Plugin already installed!")
+        """
+        except:
+            print("Couldn't create the file", install_dir)
+        """
 
 #obj = Fetch()
 #obj.getInfo()

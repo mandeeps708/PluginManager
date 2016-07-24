@@ -30,5 +30,6 @@ obj.info(plugins[2])
 obj.info(plugins[7])
 obj.info(plugins[0])
 obj.info(plugins[24])
+obj.install(plugins[21])
 
 # obj.install(plugins[0])
