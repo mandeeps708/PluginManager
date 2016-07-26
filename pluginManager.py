@@ -209,7 +209,7 @@ class FetchFromWiki(Fetch):
 
         # If any of the paths do not exist, then create one.
         if not os.path.exists(self.plugin_dir):
-            os.mkdir(self.plugin_dir)
+            os.makedirs(self.plugin_dir)
 
     def getPluginsList(self):
         "Get a list of plugins available on the FreeCAD Wiki"
