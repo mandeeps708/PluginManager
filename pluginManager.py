@@ -21,6 +21,7 @@ from socket import gaierror
 import FreeCAD
 # import ipdb
 
+
 class Plugin():
     "Information about plugin."
     # def __init__(self, name, author, plugin_type, description, baseurl, infourl):
@@ -38,6 +39,8 @@ class Plugin():
 
     def __repr__(self):
         return 'Plugin(%s)' % (self.name)
+
+
 class Fetch(object):
     "The base fetch class"
 
@@ -54,7 +57,7 @@ class Fetch(object):
     def isInstalled(self):
         print("If installed or not")
 
-    def install(self):
+    def install(self, plugin):
         print("Installing")
         
     def isUpToDate(self):
@@ -107,12 +110,12 @@ class FetchFromGitHub(Fetch):
 
             # Iterations to fetch submodule entries and their info.
             for item in repo_content:
-		url = str(item.html_url)
-		try:
+                url = str(item.html_url)
+                try:
                     gitUrl = re.search('(.+?)/tree', url).group(1)
-		except:
-		    pass
-		else:
+                except:
+                    pass
+                else:
 		    # print(item.name)
 		    # print(gitUrl)
                     instance = Plugin(item.name, gitUrl, self.plugin_type)
@@ -195,7 +198,18 @@ class FetchFromWiki(Fetch):
         self.macro_instances = []
         self.all_macros = []
         self.plugin_type = "Macro"
-        self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Macro")
+        # ipdb.set_trace()
+
+        # Get the user-preferred Macro directory.
+        self.plugin_dir = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Macro").GetString("MacroPath")
+
+        # If not specified by user, then set a default one.
+        if not self.plugin_dir:
+            self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Macro")
+
+        # If any of the paths do not exist, then create one.
+        if not os.path.exists(self.plugin_dir):
+            os.mkdir(self.plugin_dir)
 
     def getPluginsList(self):
         "Get a list of plugins available on the FreeCAD Wiki"
