@@ -14,9 +14,10 @@
 """
 
 from __future__ import print_function
-import re, os
+import re
+import os
 from socket import gaierror
-# Guide to import FreeCAD: 
+# Guide to import FreeCAD:
 # https://mandeep7.wordpress.com/2016/07/23/import-freecad-in-python/
 import FreeCAD
 # import ipdb
@@ -24,9 +25,11 @@ import FreeCAD
 
 class Plugin():
     "Information about plugin."
-    # def __init__(self, name, author, plugin_type, description, baseurl, infourl):
+    # def __init__(self, name, author, plugin_type, description, baseurl,
+    #              infourl):
     # def __init__(self, name, author, baseurl, description):
-    def __init__(self, name, baseurl, plugin_type, author = None, description = None):
+    def __init__(self, name, baseurl, plugin_type, author=None,
+                 description=None):
         "returns plugin info"
         self.name = name
         self.author = author
@@ -59,7 +62,7 @@ class Fetch(object):
 
     def install(self, plugin):
         print("Installing")
-        
+
     def isUpToDate(self):
         print("Check for latest version")
 
@@ -80,8 +83,9 @@ class FetchFromGitHub(Fetch):
         "A common function for github authentication"
 
         from github import Github
-        # Github API token. Create one at https://github.com/settings/tokens/new
-        # and replace it by "None" below.
+        """Github API token. Create one at
+        https://github.com/settings/tokens/new and replace it by "None" below.
+        """
         token = None
         git = Github(token)
 
@@ -102,9 +106,6 @@ class FetchFromGitHub(Fetch):
             repo = git.get_user(github_username).get_repo(repository)
             print("Fetching repository details...")
 
-            # To store count of number of submodules.
-            count = 0
-
             # Fetching repository contents.
             repo_content = repo.get_dir_contents("")
 
@@ -116,8 +117,8 @@ class FetchFromGitHub(Fetch):
                 except:
                     pass
                 else:
-		    # print(item.name)
-		    # print(gitUrl)
+                    # print(item.name)
+                    # print(gitUrl)
                     instance = Plugin(item.name, gitUrl, self.plugin_type)
                     instance.fetch = self
                     self.instances[str(item.name)] = instance
@@ -125,7 +126,7 @@ class FetchFromGitHub(Fetch):
             # ipdb.set_trace()
             # print("\nPlugins: ", self.instances)
             return self.instances.values()
-            
+
         except gaierror or timeout:
             print("Please check your network connection!")
 
@@ -135,12 +136,12 @@ class FetchFromGitHub(Fetch):
         except ImportError:
             print("PyGithub isn't installed!")
 
-        #except GithubException:
-        #    print("API limit exceeded!")
+        """except GithubException:
+            print("API limit exceeded!")
 
-        #except:
-        #    print("Please check your network connection!")
-
+        except:
+            print("Please check your network connection!")
+        """
 
     def getInfo(self, targetPlugin):
         "Get additional information about a specific plugin (GitHub)."
@@ -151,7 +152,8 @@ class FetchFromGitHub(Fetch):
         for instance in self.instances.values():
             if(targetPlugin.name == instance.name):
                 # Getting the submodule info like author, description.
-                submodule_repoInfo = re.search('https://github.com/(.+?)$', instance.baseurl).group(1)
+                submodule_repoInfo = re.search('https://github.com/(.+?)$',
+                                               instance.baseurl).group(1)
                 submodule_repo = git.get_repo(submodule_repoInfo)
                 # submodule_author = submodule_repo.owner.name
                 submodule_author = submodule_repo.owner.login
@@ -161,8 +163,12 @@ class FetchFromGitHub(Fetch):
                 # import IPython; IPython.embed()
 
                 # Creating Plugin class instances.
-                print(instance.name, "\n", instance.baseurl, "\n", self.plugin_type, "\n",  submodule_author, "\n", submodule_description)
-                workbench = Plugin(instance.name, instance.baseurl, self.plugin_type, submodule_author, submodule_description)
+                print(instance.name, "\n", instance.baseurl, "\n",
+                      self.plugin_type, "\n",  submodule_author, "\n",
+                      submodule_description)
+                workbench = Plugin(instance.name, instance.baseurl,
+                                   self.plugin_type, submodule_author,
+                                   submodule_description)
                 self.gitPlugins.append(workbench)
                 break
 
@@ -182,7 +188,9 @@ class FetchFromGitHub(Fetch):
 
         # Checks if the plugin installation path already exists.
         if not os.path.exists(install_dir):
-            # Clone the GitHub repository via Plugin URL to install_dir and with depth=1 (shallow clone).
+            """Clone the GitHub repository via Plugin URL to install_dir and
+            with depth=1 (shallow clone).
+            """
             git.Repo.clone_from(plugin.baseurl, install_dir, depth=1)
             print("Done!")
 
@@ -205,7 +213,8 @@ class FetchFromWiki(Fetch):
 
         # If not specified by user, then set a default one.
         if not self.plugin_dir:
-            self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Macro")
+            self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"),
+                                           "Macro")
 
         # If any of the paths do not exist, then create one.
         if not os.path.exists(self.plugin_dir):
@@ -214,11 +223,14 @@ class FetchFromWiki(Fetch):
     def getPluginsList(self):
         "Get a list of plugins available on the FreeCAD Wiki"
         try:
-            import requests, bs4
+            import requests
+            import bs4
 
             # FreeCAD Macro page.
             source_link = "http://www.freecadweb.org/wiki/index.php?title=Macros_recipes"
-            # source_link = "http://www.freecadweb.org/wiki/index.php?title=Sandbox:Macro_Recipes"
+            """source_link = "http://www.freecadweb.org/wiki/
+                             index.php?title=Sandbox:Macro_Recipes"
+            """
 
             # Generating parsed HTML tree from the URL.
             req = requests.get(source_link, timeout=15)
@@ -227,7 +239,6 @@ class FetchFromWiki(Fetch):
 
             # Selects the spans with class MacroLink enclosing the macro links.
             macros = soup.select("span.MacroLink")
-            macro_count = 0
 
             for macro in macros[:5]:
                 # Prints macro name
@@ -237,10 +248,10 @@ class FetchFromWiki(Fetch):
                 # Macro URL.
                 macro_url = "http://freecadweb.org" + macro.a.get("href")
                 # print(macro_name, macro_url)
-                macro_instance = Plugin(macro_name, macro_url, self.plugin_type)
+                macro_instance = Plugin(macro_name, macro_url,
+                                        self.plugin_type)
                 macro_instance.fetch = self
                 self.macro_instances.append(macro_instance)
-
 
         except requests.exceptions.ConnectionError:
             print("Please check your network connection!")
@@ -256,10 +267,12 @@ class FetchFromWiki(Fetch):
         return self.macro_instances
 
     def macroWeb(self, targetPlugin):
-        "Returns the parsed Macro Web page object. Separated, to be used by another functions."
+        """Returns the parsed Macro Web page object. Separated, to be used
+           by another functions."""
 
         try:
-            import requests, bs4
+            import requests
+            import bs4
 
             if targetPlugin in self.macro_instances:
                 macro_page = requests.get(targetPlugin.baseurl)
@@ -271,13 +284,10 @@ class FetchFromWiki(Fetch):
         except requests.exceptions.ConnectionError:
             print("Please check your network connection!")
 
-
     def getInfo(self, targetPlugin):
         "Getting additional information about a plugin (macro)"
 
         try:
-            import requests, bs4
-
             # ipdb.set_trace()
             # import IPython; IPython.embed()
 
@@ -290,9 +300,13 @@ class FetchFromWiki(Fetch):
             print("Macro Information not found! Skipping Macro...")
 
         else:
-            # macro_instance = Plugin(macro_name, macro_author, macro_url, macro_description)
-            plugin = Plugin(targetPlugin.name, targetPlugin.baseurl, self.plugin_type, macro_author, macro_description)
-            print(plugin.name, "\n", plugin.baseurl, "\n", self.plugin_type, "\n",  macro_author, "\n", macro_description)
+            """macro_instance = Plugin(macro_name, macro_author, macro_url,
+                                    macro_description)
+            """
+            plugin = Plugin(targetPlugin.name, targetPlugin.baseurl,
+                            self.plugin_type, macro_author, macro_description)
+            print(plugin.name, "\n", plugin.baseurl, "\n", self.plugin_type,
+                  "\n",  macro_author, "\n", macro_description)
             self.all_macros.append(plugin)
             # print(plugin.author)
 
@@ -303,11 +317,12 @@ class FetchFromWiki(Fetch):
         "Installs the Macro"
 
         print("Installing...", targetPlugin.name)
-        install_dir = os.path.join(self.plugin_dir, targetPlugin.name + ".FCMacro")
+        install_dir = os.path.join(self.plugin_dir, targetPlugin.name +
+                                   ".FCMacro")
 
         macro = self.macroWeb(targetPlugin)
         macro_code = macro.select(".mw-highlight.mw-content-ltr")[0].getText()
-        #try:
+        # try:
         # Checks if the plugin installation path already exists.
         if not os.path.exists(install_dir):
             macro_file = open(install_dir, 'w+')
@@ -322,25 +337,6 @@ class FetchFromWiki(Fetch):
             print("Couldn't create the file", install_dir)
         """
 
-#obj = Fetch()
-#obj.getInfo()
-
-"""
-print("\n================ GitHub Workbenches ================\n")
-gObj = FetchFromGitHub()
-plugins = gObj.getPluginsList()
-
-print("\n================ Macros ================\n")
-mac = FetchFromWiki()
-mplugins = mac.getPluginsList()
-
-makeCube_info = mac.getInfo("Macro Make Cube")
-"""
-
-# animation_info = gObj.getInfo("animation")
-# sheetmetal_info = gObj.getInfo("sheetmetal")
-# ipdb.set_trace()
-
 
 class PluginManager():
     "An interface to manage all plugins"
@@ -354,8 +350,10 @@ class PluginManager():
         except:
             print("Please check the connection!")
             exit()
-        self.macro_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Macro")
-        self.workbench_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Mod")
+        self.macro_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"),
+                                      "Macro")
+        self.workbench_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"),
+                                          "Mod")
 
     def allPlugins(self):
         "Returns all of the available plugins"
