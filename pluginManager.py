@@ -77,7 +77,13 @@ class FetchFromGitHub(Fetch):
         self.instances = {}
         self.gitPlugins = []
         self.plugin_type = "Workbench"
+
+        # Specify the directory where the Workbenches are to be installed.
         self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Mod")
+
+        # If any of the paths do not exist, then create one.
+        if not os.path.exists(self.plugin_dir):
+            os.makedirs(self.plugin_dir)
 
     def githubAuth(self):
         "A common function for github authentication"
@@ -240,7 +246,8 @@ class FetchFromWiki(Fetch):
             # Selects the spans with class MacroLink enclosing the macro links.
             macros = soup.select("span.MacroLink")
 
-            for macro in macros[:5]:
+            # for macro in macros[:5]:
+            for macro in macros:
                 # Prints macro name
                 # ipdb.set_trace()
                 macro_name = macro.a.getText()
@@ -321,21 +328,29 @@ class FetchFromWiki(Fetch):
                                    ".FCMacro")
 
         macro = self.macroWeb(targetPlugin)
-        macro_code = macro.select(".mw-highlight.mw-content-ltr")[0].getText()
-        # try:
-        # Checks if the plugin installation path already exists.
-        if not os.path.exists(install_dir):
-            macro_file = open(install_dir, 'w+')
-            macro_file.write(macro_code)
-            macro_file.close()
-            print("Done!")
+
+        try:
+            macro_code = macro.select(".mw-highlight.mw-content-ltr")[0].getText()
+
+        except IndexError:
+            print("No code found!")
 
         else:
-            print("Plugin already installed!")
-        """
-        except:
-            print("Couldn't create the file", install_dir)
-        """
+            # try:
+            # Checks if the plugin installation path already exists.
+            if not os.path.exists(install_dir):
+                macro_file = open(install_dir, 'w+')
+                # ipdb.set_trace()
+                macro_file.write(macro_code.encode("utf8"))
+                macro_file.close()
+                print("Done!")
+
+            else:
+                print("Plugin already installed!")
+            """
+            except:
+                print("Couldn't create the file", install_dir)
+            """
 
 
 class PluginManager():

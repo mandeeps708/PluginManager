@@ -22,14 +22,17 @@ plugins = obj.allPlugins()
 
 # Getting a list of all Plugins.
 for index, plugin in enumerate(plugins):
+    print("\n===========")
     print(index, plugin.name)
-    print(plugin.baseurl)
-
+    # obj.info(plugin)
+    # obj.install(plugin)
+"""
 # ipdb.set_trace()
 obj.info(plugins[2])
 obj.info(plugins[7])
 obj.info(plugins[0])
 obj.info(plugins[24])
 obj.install(plugins[21])
-
+obj.install(plugins[2])
+"""
 # obj.install(plugins[0])
