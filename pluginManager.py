@@ -330,14 +330,26 @@ class FetchFromWiki(Fetch):
         macro = self.macroWeb(targetPlugin)
 
         try:
-            macro_code = macro.select(".mw-highlight.mw-content-ltr")[0].getText()
+            try:
+                macro_code = macro.select(".mw-highlight.mw-content-ltr.macro-code")[0].getText()
 
-        except IndexError:
-            print("No code found!")
+            except IndexError:
+                macro_code = macro.select(".mw-highlight.mw-content-ltr")[0].getText()
 
-        else:
+            else:
+                print("Nothing there!")
+
+            """except:
+                print("No code found!")
+            """
+            # else:
             # try:
             # Checks if the plugin installation path already exists.
+
+        except:
+            print("Macro fetching Error!")
+
+        else:
             if not os.path.exists(install_dir):
                 macro_file = open(install_dir, 'w+')
                 # ipdb.set_trace()
@@ -347,10 +359,10 @@ class FetchFromWiki(Fetch):
 
             else:
                 print("Plugin already installed!")
-            """
-            except:
-                print("Couldn't create the file", install_dir)
-            """
+        """
+        except:
+            print("Couldn't create the file", install_dir)
+        """
 
 
 class PluginManager():
