@@ -57,7 +57,7 @@ class Fetch(object):
     def getInfo(self, plugin):
         return plugin
 
-    def isInstalled(self):
+    def isInstalled(self, plugin):
         print("If installed or not")
 
     def install(self, plugin):
@@ -181,6 +181,19 @@ class FetchFromGitHub(Fetch):
                 # ipdb.set_trace()
         return workbench
 
+    def isInstalled(self, plugin):
+        """Checks and returns True if the plugin is already installed,
+           else returns false.
+        """
+
+        install_dir = os.path.join(self.plugin_dir, plugin.name)
+
+        # Checks if the plugin installation path already exists.
+        if os.path.exists(install_dir):
+            return True
+        else:
+            return False
+
     def install(self, plugin):
         "Installs a GitHub plugin"
 
@@ -193,7 +206,7 @@ class FetchFromGitHub(Fetch):
         # git.Git().clone(str(plugin.baseurl), install_dir)
 
         # Checks if the plugin installation path already exists.
-        if not os.path.exists(install_dir):
+        if not self.isInstalled(plugin):
             """Clone the GitHub repository via Plugin URL to install_dir and
             with depth=1 (shallow clone).
             """
@@ -321,6 +334,20 @@ class FetchFromWiki(Fetch):
         # ipdb.set_trace()
         return plugin
 
+    def isInstalled(self, targetPlugin):
+        """Checks and returns True if the plugin is already installed,
+           else returns false.
+        """
+
+        install_dir = os.path.join(self.plugin_dir, targetPlugin.name +
+                                   ".FCMacro")
+
+        # Checks if the plugin installation path already exists.
+        if os.path.exists(install_dir):
+            return True
+        else:
+            return False
+
     def install(self, targetPlugin):
         "Installs the Macro"
 
@@ -351,7 +378,7 @@ class FetchFromWiki(Fetch):
             print("Macro fetching Error!")
 
         else:
-            if not os.path.exists(install_dir):
+            if not self.isInstalled(targetPlugin):
                 macro_file = open(install_dir, 'w+')
                 # ipdb.set_trace()
                 macro_file.write(macro_code.encode("utf8"))
