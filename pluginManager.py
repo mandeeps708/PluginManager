@@ -275,7 +275,8 @@ class FetchFromWiki(Fetch):
 
     def macroWeb(self, targetPlugin):
         """Returns the parsed Macro Web page object. Separated, to be used
-           by another functions."""
+           by another functions.
+        """
 
         try:
             import requests
@@ -374,6 +375,15 @@ class PluginManager():
         mac = FetchFromWiki()
         try:
             self.totalPlugins = gObj.getPluginsList() + mac.getPluginsList()
+
+            """The blacklisted plugins are those that can not be installed.
+                And that do not contain code.
+            """
+            self.blacklisted_plugins_list = ["Macro BOLTS",
+                                             "Macro PartsLibrary",
+                                             "Macro FCGear",
+                                             "Macro WorkFeatures"]
+
         except:
             print("Please check the connection!")
             exit()
@@ -384,6 +394,13 @@ class PluginManager():
 
     def allPlugins(self):
         "Returns all of the available plugins"
+        # ipdb.set_trace()
+
+        # Removes the blacklisted Plugins.
+        for index, plugin in enumerate(self.totalPlugins):
+            if plugin.name in self.blacklisted_plugins_list:
+                del self.totalPlugins[index]
+
         # ipdb.set_trace()
         return self.totalPlugins
 
