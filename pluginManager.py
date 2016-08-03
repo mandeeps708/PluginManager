@@ -29,7 +29,7 @@ class Plugin():
     #              infourl):
     # def __init__(self, name, author, baseurl, description):
     def __init__(self, name, baseurl, plugin_type, author=None,
-                 description=None):
+                 description=None, version=None):
         "returns plugin info"
         self.name = name
         self.author = author
@@ -38,6 +38,7 @@ class Plugin():
         self.plugin_type = plugin_type
         self.fetch = self
         self.plugin_dir = None
+        self.version = version
         # self.infourl = infourl
 
     def __repr__(self):
@@ -57,13 +58,13 @@ class Fetch(object):
     def getInfo(self, plugin):
         return plugin
 
-    def isInstalled(self):
+    def isInstalled(self, plugin):
         print("If installed or not")
 
     def install(self, plugin):
         print("Installing")
 
-    def isUpToDate(self):
+    def isUpToDate(self, plugin):
         print("Check for latest version")
 
 
@@ -181,6 +182,19 @@ class FetchFromGitHub(Fetch):
                 # ipdb.set_trace()
         return workbench
 
+    def isInstalled(self, plugin):
+        """Checks and returns True if the plugin is already installed,
+           else returns false.
+        """
+
+        install_dir = os.path.join(self.plugin_dir, plugin.name)
+
+        # Checks if the plugin installation path already exists.
+        if os.path.exists(install_dir):
+            return True
+        else:
+            return False
+
     def install(self, plugin):
         "Installs a GitHub plugin"
 
@@ -193,7 +207,7 @@ class FetchFromGitHub(Fetch):
         # git.Git().clone(str(plugin.baseurl), install_dir)
 
         # Checks if the plugin installation path already exists.
-        if not os.path.exists(install_dir):
+        if not self.isInstalled(plugin):
             """Clone the GitHub repository via Plugin URL to install_dir and
             with depth=1 (shallow clone).
             """
@@ -202,6 +216,9 @@ class FetchFromGitHub(Fetch):
 
         else:
             print("Plugin already installed!")
+
+    def isUpToDate(self, plugin):
+        pass
 
 
 class FetchFromWiki(Fetch):
@@ -303,6 +320,7 @@ class FetchFromWiki(Fetch):
             macro = self.macroWeb(targetPlugin)
             macro_description = macro.select(".macro-description")[0].getText()
             macro_author = macro.select(".macro-author")[0].getText()
+            self.macro_version = macro.select(".macro-version")[0].getText()
 
         except IndexError:
             print("Macro Information not found! Skipping Macro...")
@@ -312,21 +330,39 @@ class FetchFromWiki(Fetch):
                                     macro_description)
             """
             plugin = Plugin(targetPlugin.name, targetPlugin.baseurl,
-                            self.plugin_type, macro_author, macro_description)
+                            self.plugin_type, macro_author, macro_description,
+                            self.macro_version)
             print(plugin.name, "\n", plugin.baseurl, "\n", self.plugin_type,
-                  "\n",  macro_author, "\n", macro_description)
+                  "\n",  macro_author, "\n", macro_description,
+                  self.macro_version)
             self.all_macros.append(plugin)
             # print(plugin.author)
 
         # ipdb.set_trace()
         return plugin
 
+    def isInstalled(self, targetPlugin):
+        """Checks and returns True if the plugin is already installed,
+           else returns false.
+        """
+
+        self.install_dir = os.path.join(self.plugin_dir, targetPlugin.name +
+                                        ".FCMacro")
+
+        # Checks if the plugin installation path already exists.
+        if os.path.exists(self.install_dir):
+            return True
+        else:
+            return False
+
     def install(self, targetPlugin):
         "Installs the Macro"
 
         print("Installing...", targetPlugin.name)
-        install_dir = os.path.join(self.plugin_dir, targetPlugin.name +
-                                   ".FCMacro")
+
+        info = self.getInfo(targetPlugin)
+        info.version
+        # ipdb.set_trace()
 
         macro = self.macroWeb(targetPlugin)
 
@@ -351,8 +387,8 @@ class FetchFromWiki(Fetch):
             print("Macro fetching Error!")
 
         else:
-            if not os.path.exists(install_dir):
-                macro_file = open(install_dir, 'w+')
+            if not self.isInstalled(targetPlugin):
+                macro_file = open(self.install_dir, 'w+')
                 # ipdb.set_trace()
                 macro_file.write(macro_code.encode("utf8"))
                 macro_file.close()
@@ -364,6 +400,9 @@ class FetchFromWiki(Fetch):
         except:
             print("Couldn't create the file", install_dir)
         """
+
+    def isUpToDate(self, targetPlugin):
+        pass
 
 
 class PluginManager():
@@ -411,7 +450,8 @@ class PluginManager():
         if targetPlugin in self.totalPlugins:
             print("\nGetting information about", targetPlugin, "...")
             # ipdb.set_trace()
-            targetPlugin.fetch.getInfo(targetPlugin)
+            pluginInfo = targetPlugin.fetch.getInfo(targetPlugin)
+            return pluginInfo
 
     def install(self, targetPlugin):
         "Install a plugin"
