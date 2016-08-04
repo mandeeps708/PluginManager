@@ -27,7 +27,8 @@ for index, plugin in enumerate(plugins):
     # obj.info(plugin)
     # if plugin.plugin_type == "Macro":
     #     obj.install(plugin)
-obj.install(plugins[21])
+# obj.install(plugins[21])
+obj.info(plugins[21])
 """
 # ipdb.set_trace()
 obj.info(plugins[2])

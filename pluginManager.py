@@ -79,6 +79,9 @@ class FetchFromGitHub(Fetch):
         self.gitPlugins = []
         self.plugin_type = "Workbench"
 
+        # To store the getInfo() output to avoid fetching that info each time.
+        self.stored_workbenches = {}
+
         # Specify the directory where the Workbenches are to be installed.
         self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Mod")
 
@@ -154,33 +157,41 @@ class FetchFromGitHub(Fetch):
         "Get additional information about a specific plugin (GitHub)."
         git = self.githubAuth()
 
-        # ipdb.set_trace()
-        # Check if a plugin is present in the plugin list.
-        for instance in self.instances.values():
-            if(targetPlugin.name == instance.name):
-                # Getting the submodule info like author, description.
-                submodule_repoInfo = re.search('https://github.com/(.+?)$',
-                                               instance.baseurl).group(1)
-                submodule_repo = git.get_repo(submodule_repoInfo)
-                # submodule_author = submodule_repo.owner.name
-                submodule_author = submodule_repo.owner.login
-                submodule_description = submodule_repo.description
-                # print(submodule_author, submodule_description)
-                # ipdb.set_trace()
-                # import IPython; IPython.embed()
+        # Checks if the additional information has already been fetched.
+        if targetPlugin.name in self.stored_workbenches.keys():
+            print("Already in the list...")
+            return self.stored_workbenches[targetPlugin.name]
 
-                # Creating Plugin class instances.
-                print(instance.name, "\n", instance.baseurl, "\n",
-                      self.plugin_type, "\n",  submodule_author, "\n",
-                      submodule_description)
-                workbench = Plugin(instance.name, instance.baseurl,
-                                   self.plugin_type, submodule_author,
-                                   submodule_description)
-                self.gitPlugins.append(workbench)
-                break
+        # If information isn't there, then fetch it and store it to the dict.
+        else:
+            # ipdb.set_trace()
+            # Check if a plugin is present in the plugin list.
+            for instance in self.instances.values():
+                if(targetPlugin.name == instance.name):
+                    # Getting the submodule info like author, description.
+                    submodule_repoInfo = re.search('https://github.com/(.+?)$',
+                                                   instance.baseurl).group(1)
+                    submodule_repo = git.get_repo(submodule_repoInfo)
+                    # submodule_author = submodule_repo.owner.name
+                    submodule_author = submodule_repo.owner.login
+                    submodule_description = submodule_repo.description
+                    # print(submodule_author, submodule_description)
+                    # ipdb.set_trace()
+                    # import IPython; IPython.embed()
 
-                # ipdb.set_trace()
-        return workbench
+                    # Creating Plugin class instances.
+                    print(instance.name, "\n", instance.baseurl, "\n",
+                          self.plugin_type, "\n",  submodule_author, "\n",
+                          submodule_description)
+                    workbench = Plugin(instance.name, instance.baseurl,
+                                       self.plugin_type, submodule_author,
+                                       submodule_description)
+                    self.stored_workbenches[targetPlugin.name] = workbench
+                    self.gitPlugins.append(workbench)
+                    break
+
+                    # ipdb.set_trace()
+            return workbench
 
     def isInstalled(self, plugin):
         """Checks and returns True if the plugin is already installed,
@@ -229,6 +240,9 @@ class FetchFromWiki(Fetch):
         self.macro_instances = []
         self.all_macros = []
         self.plugin_type = "Macro"
+
+        # To store the getInfo() output to avoid fetching that info each time.
+        self.stored_info = {}
         # ipdb.set_trace()
 
         # Get the user-preferred Macro directory.
@@ -312,34 +326,42 @@ class FetchFromWiki(Fetch):
     def getInfo(self, targetPlugin):
         "Getting additional information about a plugin (macro)"
 
-        try:
-            # ipdb.set_trace()
-            # import IPython; IPython.embed()
+        # Checks if the additional information has already been fetched.
+        if targetPlugin.name in self.stored_info.keys():
+            print("Already in the list...")
+            return self.stored_info[targetPlugin.name]
 
-            # Use the same URL to fetch macro desciption and macro author
-            macro = self.macroWeb(targetPlugin)
-            macro_description = macro.select(".macro-description")[0].getText()
-            macro_author = macro.select(".macro-author")[0].getText()
-            self.macro_version = macro.select(".macro-version")[0].getText()
-
-        except IndexError:
-            print("Macro Information not found! Skipping Macro...")
-
+        # If information isn't there, then fetch it and store it to the dict.
         else:
-            """macro_instance = Plugin(macro_name, macro_author, macro_url,
-                                    macro_description)
-            """
-            plugin = Plugin(targetPlugin.name, targetPlugin.baseurl,
-                            self.plugin_type, macro_author, macro_description,
-                            self.macro_version)
-            print(plugin.name, "\n", plugin.baseurl, "\n", self.plugin_type,
-                  "\n",  macro_author, "\n", macro_description,
-                  self.macro_version)
-            self.all_macros.append(plugin)
-            # print(plugin.author)
+            try:
+                # ipdb.set_trace()
+                # import IPython; IPython.embed()
 
-        # ipdb.set_trace()
-        return plugin
+                # Use the same URL to fetch macro desciption and macro author
+                macro = self.macroWeb(targetPlugin)
+                macro_description = macro.select(".macro-description")[0].getText()
+                macro_author = macro.select(".macro-author")[0].getText()
+                self.macro_version = macro.select(".macro-version")[0].getText()
+
+            except IndexError:
+                print("Macro Information not found! Skipping Macro...")
+
+            else:
+                """macro_instance = Plugin(macro_name, macro_author, macro_url,
+                                        macro_description)
+                """
+                plugin = Plugin(targetPlugin.name, targetPlugin.baseurl,
+                                self.plugin_type, macro_author, macro_description,
+                                self.macro_version)
+
+                # Store the plugin information to the dictionary.
+                self.stored_info[targetPlugin.name] = plugin
+                print(plugin.name, "\n", plugin.baseurl, "\n", self.plugin_type,
+                      "\n",  macro_author, "\n", macro_description,
+                      self.macro_version)
+                self.all_macros.append(plugin)
+                # print(plugin.author)
+            return plugin
 
     def isInstalled(self, targetPlugin):
         """Checks and returns True if the plugin is already installed,
