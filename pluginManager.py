@@ -198,10 +198,10 @@ class FetchFromGitHub(Fetch):
            else returns false.
         """
 
-        install_dir = os.path.join(self.plugin_dir, plugin.name)
+        self.install_dir = os.path.join(self.plugin_dir, plugin.name)
 
         # Checks if the plugin installation path already exists.
-        if os.path.exists(install_dir):
+        if os.path.exists(self.install_dir):
             return True
         else:
             return False
@@ -212,8 +212,6 @@ class FetchFromGitHub(Fetch):
         print("Installing...", plugin.name)
         import git
 
-        install_dir = os.path.join(self.plugin_dir, plugin.name)
-
         # Clone the GitHub repository via the URL.
         # git.Git().clone(str(plugin.baseurl), install_dir)
 
@@ -222,7 +220,8 @@ class FetchFromGitHub(Fetch):
             """Clone the GitHub repository via Plugin URL to install_dir and
             with depth=1 (shallow clone).
             """
-            git.Repo.clone_from(plugin.baseurl, install_dir, depth=1)
+            git.Repo.clone_from(plugin.baseurl, self.install_dir.lower(),
+                                depth=1)
             print("Done!")
 
         else:
@@ -368,8 +367,13 @@ class FetchFromWiki(Fetch):
            else returns false.
         """
 
+        # Get plugin information.
+        info = self.getInfo(targetPlugin)
+        # Store version information after removing new line from it.
+        version = info.version.replace("\n", "")
+        # The macro installation path.
         self.install_dir = os.path.join(self.plugin_dir, targetPlugin.name +
-                                        ".FCMacro")
+                                        "_" + version + ".FCMacro")
 
         # Checks if the plugin installation path already exists.
         if os.path.exists(self.install_dir):
@@ -382,9 +386,8 @@ class FetchFromWiki(Fetch):
 
         print("Installing...", targetPlugin.name)
 
-        info = self.getInfo(targetPlugin)
-        info.version
-        # ipdb.set_trace()
+        # Lambda function to check the path existence.
+        # self.isThere = lambda path: os.path.exists(path)
 
         macro = self.macroWeb(targetPlugin)
 
@@ -474,6 +477,11 @@ class PluginManager():
             # ipdb.set_trace()
             pluginInfo = targetPlugin.fetch.getInfo(targetPlugin)
             return pluginInfo
+
+    def isInstalled(self, targetPlugin):
+        "Checks if the plugin is installed or not"
+        if targetPlugin in self.totalPlugins:
+            return targetPlugin.fetch.isInstalled(targetPlugin)
 
     def install(self, targetPlugin):
         "Install a plugin"
