@@ -29,7 +29,7 @@ class Plugin():
     #              infourl):
     # def __init__(self, name, author, baseurl, description):
     def __init__(self, name, baseurl, plugin_type, author=None,
-                 description=None, version=None):
+                 description=None, version=None, directory=None):
         "returns plugin info"
         self.name = name
         self.author = author
@@ -37,7 +37,7 @@ class Plugin():
         self.description = description
         self.plugin_type = plugin_type
         self.fetch = self
-        self.plugin_dir = None
+        self.plugin_dir = directory
         self.version = version
         # self.infourl = infourl
 
@@ -83,11 +83,11 @@ class FetchFromGitHub(Fetch):
         self.stored_workbenches = {}
 
         # Specify the directory where the Workbenches are to be installed.
-        self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Mod")
+        self.workbench_path = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Mod")
 
         # If any of the paths do not exist, then create one.
-        if not os.path.exists(self.plugin_dir):
-            os.makedirs(self.plugin_dir)
+        if not os.path.exists(self.workbench_path):
+            os.makedirs(self.workbench_path)
 
     def githubAuth(self):
         "A common function for github authentication"
@@ -198,7 +198,8 @@ class FetchFromGitHub(Fetch):
            else returns false.
         """
 
-        self.install_dir = os.path.join(self.plugin_dir, plugin.name)
+        self.install_dir = os.path.join(self.workbench_path, plugin.name)
+        print(self.install_dir)
 
         # Checks if the plugin installation path already exists.
         if os.path.exists(self.install_dir):
@@ -220,8 +221,7 @@ class FetchFromGitHub(Fetch):
             """Clone the GitHub repository via Plugin URL to install_dir and
             with depth=1 (shallow clone).
             """
-            git.Repo.clone_from(plugin.baseurl, self.install_dir.lower(),
-                                depth=1)
+            git.Repo.clone_from(plugin.baseurl, self.install_dir, depth=1)
             print("Done!")
 
         else:
@@ -245,16 +245,16 @@ class FetchFromWiki(Fetch):
         # ipdb.set_trace()
 
         # Get the user-preferred Macro directory.
-        self.plugin_dir = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Macro").GetString("MacroPath")
+        self.macro_path = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Macro").GetString("MacroPath")
 
         # If not specified by user, then set a default one.
-        if not self.plugin_dir:
-            self.plugin_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"),
+        if not self.macro_path:
+            self.macro_path = os.path.join(FreeCAD.ConfigGet("UserAppData"),
                                            "Macro")
 
         # If any of the paths do not exist, then create one.
-        if not os.path.exists(self.plugin_dir):
-            os.makedirs(self.plugin_dir)
+        if not os.path.exists(self.macro_path):
+            os.makedirs(self.macro_path)
 
     def getPluginsList(self):
         "Get a list of plugins available on the FreeCAD Wiki"
@@ -340,7 +340,7 @@ class FetchFromWiki(Fetch):
                 macro = self.macroWeb(targetPlugin)
                 macro_description = macro.select(".macro-description")[0].getText()
                 macro_author = macro.select(".macro-author")[0].getText()
-                self.macro_version = macro.select(".macro-version")[0].getText()
+                self.macro_version = macro.select(".macro-version")[0].getText().replace("\n", "")
 
             except IndexError:
                 print("Macro Information not found! Skipping Macro...")
@@ -370,10 +370,12 @@ class FetchFromWiki(Fetch):
         # Get plugin information.
         info = self.getInfo(targetPlugin)
         # Store version information after removing new line from it.
-        version = info.version.replace("\n", "")
+        version = info.version
         # The macro installation path.
-        self.install_dir = os.path.join(self.plugin_dir, targetPlugin.name +
+        self.install_dir = os.path.join(self.macro_path, targetPlugin.name +
                                         "_" + version + ".FCMacro")
+        targetPlugin.plugin_dir = self.install_dir
+        print(targetPlugin.plugin_dir)
 
         # Checks if the plugin installation path already exists.
         if os.path.exists(self.install_dir):
@@ -451,10 +453,6 @@ class PluginManager():
         except:
             print("Please check the connection!")
             exit()
-        self.macro_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"),
-                                      "Macro")
-        self.workbench_dir = os.path.join(FreeCAD.ConfigGet("UserAppData"),
-                                          "Mod")
 
     def allPlugins(self):
         "Returns all of the available plugins"
