@@ -20,6 +20,7 @@ from socket import gaierror
 # Guide to import FreeCAD:
 # https://mandeep7.wordpress.com/2016/07/23/import-freecad-in-python/
 import FreeCAD
+import shutil
 # import ipdb
 
 
@@ -235,7 +236,12 @@ class FetchFromGitHub(Fetch):
 
     def uninstall(self, plugin):
         "Uninstall a GitHub workbench"
-        pass
+        if self.isInstalled(plugin):
+            print("Un-installing....", self.install_dir)
+            shutil.rmtree(self.install_dir)
+
+        else:
+            print("Invalid plugin!")
 
 
 class FetchFromWiki(Fetch):
