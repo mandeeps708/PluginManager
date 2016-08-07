@@ -67,6 +67,9 @@ class Fetch(object):
     def isUpToDate(self, plugin):
         print("Check for latest version")
 
+    def uninstall(self, plugin):
+        print("Un-installation")
+
 
 class FetchFromGitHub(Fetch):
     "class to get workbenches from GitHub"
@@ -228,6 +231,10 @@ class FetchFromGitHub(Fetch):
             print("Plugin already installed!")
 
     def isUpToDate(self, plugin):
+        pass
+
+    def uninstall(self, plugin):
+        "Uninstall a GitHub workbench"
         pass
 
 
@@ -431,6 +438,15 @@ class FetchFromWiki(Fetch):
     def isUpToDate(self, targetPlugin):
         pass
 
+    def uninstall(self, targetPlugin):
+        "Uninstalls a Macro plugin"
+        if self.isInstalled(targetPlugin):
+            print("Un-installing....", self.install_dir)
+            os.remove(self.install_dir)
+
+        else:
+            print("Invalid plugin")
+
 
 class PluginManager():
     "An interface to manage all plugins"
@@ -485,3 +501,8 @@ class PluginManager():
         "Install a plugin"
         if targetPlugin in self.totalPlugins:
             targetPlugin.fetch.install(targetPlugin)
+
+    def uninstall(self, targetPlugin):
+        "Uninstall a plugin"
+        if targetPlugin in self.totalPlugins:
+            targetPlugin.fetch.uninstall(targetPlugin)
