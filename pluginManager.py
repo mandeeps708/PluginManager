@@ -433,8 +433,29 @@ class FetchFromWiki(Fetch):
         """
 
     def isUpToDate(self, targetPlugin):
-        current_version = re.search('_(\d.+?).FCMacro',
-                                    targetPlugin.plugin_dir).group(1)
+        "Checks if the plugin is up to date or not"
+
+        # First checks if the plugin is installed!
+        if self.isInstalled(targetPlugin) is True:
+            # Gets the version of installed plugin.
+            try:
+                current_version = re.search('_(\d.+?).FCMacro', targetPlugin.plugin_dir).group(1)
+                # current_version = re.findall('_(\d.+?).FCMacro', targetPlugin.plugin_dir)
+            except TypeError:
+                print("Unexpectedly, couldn't get the plugin dir!")
+            # Compares local version with the remote version.
+            if current_version == targetPlugin.version:
+                print("Latest version already installed!")
+                return True
+
+            else:
+                # New version available!
+                return False
+
+        else:
+            # If the plugin isn't installed.
+            print("Plugin not installed!")
+            return None
 
     def uninstall(self, targetPlugin):
         "Uninstalls a Macro plugin"
@@ -500,6 +521,11 @@ class PluginManager():
         "Install a plugin"
         if targetPlugin in self.totalPlugins:
             targetPlugin.fetch.install(targetPlugin)
+
+    def isUpToDate(self, targetPlugin):
+        "Checks if the plugin is up to date"
+        if targetPlugin in self.totalPlugins:
+            return targetPlugin.fetch.isUpToDate(targetPlugin)
 
     def uninstall(self, targetPlugin):
         "Uninstall a plugin"
