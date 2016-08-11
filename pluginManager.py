@@ -337,10 +337,15 @@ class FetchFromWiki(Fetch):
     def getInfo(self, targetPlugin):
         "Getting additional information about a plugin (macro)"
 
-        # Checks if the additional information has already been fetched.
-        if targetPlugin.name in self.stored_info.keys():
+        # Checks if the additional information has already been fetched.""
+        """if targetPlugin.name in self.stored_info.keys():
             print("Already in the list...")
             return self.stored_info[targetPlugin.name]
+        """
+        if targetPlugin.author is not None and targetPlugin.version \
+                is not None:
+            print("Already in the list...")
+            return targetPlugin
 
         # If information isn't there, then fetch it and store it to the dict.
         else:
@@ -366,7 +371,7 @@ class FetchFromWiki(Fetch):
                                       macro_description, macro_version)
 
                 # Store the plugin information to the dictionary.
-                self.stored_info[targetPlugin.name] = targetPlugin
+                # self.stored_info[targetPlugin.name] = targetPlugin
                 print(targetPlugin.name, "\n", targetPlugin.baseurl, "\n",
                       self.plugin_type, "\n",  macro_author, "\n",
                       macro_description, macro_version)
