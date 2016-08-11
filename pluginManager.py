@@ -83,9 +83,6 @@ class FetchFromGitHub(Fetch):
         self.gitPlugins = []
         self.plugin_type = "Workbench"
 
-        # To store the getInfo() output to avoid fetching that info each time.
-        self.stored_workbenches = {}
-
         # Specify the directory where the Workbenches are to be installed.
         self.workbench_path = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Mod")
 
@@ -162,9 +159,10 @@ class FetchFromGitHub(Fetch):
         git = self.githubAuth()
 
         # Checks if the additional information has already been fetched.
-        if targetPlugin.name in self.stored_workbenches.keys():
+        if targetPlugin.author is not None and targetPlugin.description \
+                is not None:
             print("Already in the list...")
-            return self.stored_workbenches[targetPlugin.name]
+            return targetPlugin
 
         # If information isn't there, then fetch it and store it to the dict.
         else:
@@ -183,19 +181,18 @@ class FetchFromGitHub(Fetch):
                     # ipdb.set_trace()
                     # import IPython; IPython.embed()
 
-                    # Creating Plugin class instances.
+                    # Modifying the Plugin class instance.
                     print(instance.name, "\n", instance.baseurl, "\n",
                           self.plugin_type, "\n",  submodule_author, "\n",
                           submodule_description)
-                    workbench = Plugin(instance.name, instance.baseurl,
-                                       self.plugin_type, submodule_author,
-                                       submodule_description)
-                    self.stored_workbenches[targetPlugin.name] = workbench
-                    self.gitPlugins.append(workbench)
+                    targetPlugin.description = submodule_description
+                    targetPlugin.author = submodule_author
+                    # targetPlugin.version = submodule_version
+                    self.gitPlugins.append(targetPlugin)
                     break
 
                     # ipdb.set_trace()
-            return workbench
+            return targetPlugin
 
     def isInstalled(self, plugin):
         """Checks and returns True if the plugin is already installed,
@@ -251,9 +248,6 @@ class FetchFromWiki(Fetch):
         print("Fetching Macros from FC Wiki")
         self.macro_instances = []
         self.plugin_type = "Macro"
-
-        # To store the getInfo() output to avoid fetching that info each time.
-        self.stored_info = {}
         # ipdb.set_trace()
 
         # Get the user-preferred Macro directory.
@@ -338,10 +332,6 @@ class FetchFromWiki(Fetch):
         "Getting additional information about a plugin (macro)"
 
         # Checks if the additional information has already been fetched.""
-        """if targetPlugin.name in self.stored_info.keys():
-            print("Already in the list...")
-            return self.stored_info[targetPlugin.name]
-        """
         if targetPlugin.author is not None and targetPlugin.version \
                 is not None:
             print("Already in the list...")
@@ -366,12 +356,11 @@ class FetchFromWiki(Fetch):
                 """macro_instance = Plugin(macro_name, macro_author, macro_url,
                                         macro_description)
                 """
-                targetPlugin = Plugin(targetPlugin.name, targetPlugin.baseurl,
-                                      self.plugin_type, macro_author,
-                                      macro_description, macro_version)
+                # Modifying the plugin information.
+                targetPlugin.description = macro_description
+                targetPlugin.author = macro_author
+                targetPlugin.version = macro_version
 
-                # Store the plugin information to the dictionary.
-                # self.stored_info[targetPlugin.name] = targetPlugin
                 print(targetPlugin.name, "\n", targetPlugin.baseurl, "\n",
                       self.plugin_type, "\n",  macro_author, "\n",
                       macro_description, macro_version)
@@ -495,7 +484,6 @@ class PluginManager():
         "Get additional information about a plugin"
         # ipdb.set_trace()
         # import IPython; IPython.embed()
-        plugindict = FetchFromWiki().stored_info
 
         if targetPlugin in self.totalPlugins:
             print("\nGetting information about", targetPlugin, "...")
