@@ -250,7 +250,6 @@ class FetchFromWiki(Fetch):
     def __init__(self):
         print("Fetching Macros from FC Wiki")
         self.macro_instances = []
-        self.all_macros = []
         self.plugin_type = "Macro"
 
         # To store the getInfo() output to avoid fetching that info each time.
@@ -353,7 +352,7 @@ class FetchFromWiki(Fetch):
                 macro = self.macroWeb(targetPlugin)
                 macro_description = macro.select(".macro-description")[0].getText()
                 macro_author = macro.select(".macro-author")[0].getText()
-                self.macro_version = macro.select(".macro-version")[0].getText().replace("\n", "")
+                macro_version = macro.select(".macro-version")[0].getText().replace("\n", "")
 
             except IndexError:
                 print("Macro Information not found! Skipping Macro...")
@@ -362,18 +361,16 @@ class FetchFromWiki(Fetch):
                 """macro_instance = Plugin(macro_name, macro_author, macro_url,
                                         macro_description)
                 """
-                plugin = Plugin(targetPlugin.name, targetPlugin.baseurl,
-                                self.plugin_type, macro_author, macro_description,
-                                self.macro_version)
+                targetPlugin = Plugin(targetPlugin.name, targetPlugin.baseurl,
+                                      self.plugin_type, macro_author,
+                                      macro_description, macro_version)
 
                 # Store the plugin information to the dictionary.
-                self.stored_info[targetPlugin.name] = plugin
-                print(plugin.name, "\n", plugin.baseurl, "\n", self.plugin_type,
-                      "\n",  macro_author, "\n", macro_description,
-                      self.macro_version)
-                self.all_macros.append(plugin)
-                # print(plugin.author)
-            return plugin
+                self.stored_info[targetPlugin.name] = targetPlugin
+                print(targetPlugin.name, "\n", targetPlugin.baseurl, "\n",
+                      self.plugin_type, "\n",  macro_author, "\n",
+                      macro_description, macro_version)
+            return targetPlugin
 
     def isInstalled(self, targetPlugin):
         """Checks and returns True if the plugin is already installed,
@@ -442,7 +439,8 @@ class FetchFromWiki(Fetch):
         """
 
     def isUpToDate(self, targetPlugin):
-        pass
+        current_version = re.search('_(\d.+?).FCMacro',
+                                    targetPlugin.plugin_dir).group(1)
 
     def uninstall(self, targetPlugin):
         "Uninstalls a Macro plugin"
@@ -492,6 +490,8 @@ class PluginManager():
         "Get additional information about a plugin"
         # ipdb.set_trace()
         # import IPython; IPython.embed()
+        plugindict = FetchFromWiki().stored_info
+
         if targetPlugin in self.totalPlugins:
             print("\nGetting information about", targetPlugin, "...")
             # ipdb.set_trace()
