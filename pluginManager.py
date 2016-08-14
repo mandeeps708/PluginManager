@@ -71,6 +71,9 @@ class Fetch(object):
     def uninstall(self, plugin):
         print("Un-installation")
 
+    def update(self, plugin):
+        print("Update the plugin")
+
 
 class FetchFromGitHub(Fetch):
     "class to get workbenches from GitHub"
@@ -238,19 +241,20 @@ class FetchFromGitHub(Fetch):
             # Gets the version of installed plugin.
             from git import Repo
             print(targetPlugin.plugin_dir)
-            repository = Repo(targetPlugin.plugin_dir)
+            self.repository = Repo(targetPlugin.plugin_dir)
             print("It is installed!")
             # Fetch information from the remote repository.
-            repository.git.fetch()
+            self.repository.git.fetch()
             # Gets the `git status` of the repository.
-            git_status = repository.git.status()
+            git_status = self.repository.git.status()
             # Checks if the repository is up-to-date with remote.
             if re.findall("clean", git_status) or re.findall("up-to-date", git_status):
                 print("Latest version already installed!")
                 return True
 
-            else:
+            elif re.findall("behind", git_status) or re.findall("git pull", git_status):
                 # New version available!
+                print("New version available!")
                 return False
 
         else:
@@ -266,6 +270,17 @@ class FetchFromGitHub(Fetch):
 
         else:
             print("Invalid plugin!")
+
+    def update(self, plugin):
+        "Update a GitHub workbench"
+        if self.isUpToDate(plugin) is False:
+            print("Updating...")
+            # git pull the changes to update the plugin.
+            self.repository.git.pull()
+            print("Plugin successfully updated!")
+
+        else:
+            print("Plugin already up-to-date.")
 
 
 class FetchFromWiki(Fetch):
@@ -493,6 +508,20 @@ class FetchFromWiki(Fetch):
         else:
             print("Invalid plugin")
 
+    def update(self, targetPlugin):
+        "Update a Macro plugin"
+        if self.isUpToDate(targetPlugin) is False:
+            print("Updating...")
+            backup_file = targetPlugin.plugin_dir + "bak"
+            os.rename(targetPlugin.plugin_dir, backup_file)
+            # Downloading the Macro again to update the plugin.
+            self.install(targetPlugin)
+            os.remove(backup_file)
+            print("Plugin successfully updated!")
+
+        else:
+            print("Plugin already up-to-date.")
+
 
 class PluginManager():
     "An interface to manage all plugins"
@@ -558,3 +587,8 @@ class PluginManager():
         "Uninstall a plugin"
         if targetPlugin in self.totalPlugins:
             targetPlugin.fetch.uninstall(targetPlugin)
+
+    def update(self, targetPlugin):
+        "Update a plugin"
+        if targetPlugin in self.totalPlugins:
+            targetPlugin.fetch.update(targetPlugin)
