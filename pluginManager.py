@@ -201,6 +201,8 @@ class FetchFromGitHub(Fetch):
 
         self.install_dir = os.path.join(self.workbench_path, plugin.name)
         print(self.install_dir)
+        # Associate the plugin directory with the plugin instance.
+        plugin.plugin_dir = self.install_dir
 
         # Checks if the plugin installation path already exists.
         if os.path.exists(self.install_dir):
@@ -228,8 +230,33 @@ class FetchFromGitHub(Fetch):
         else:
             print("Plugin already installed!")
 
-    def isUpToDate(self, plugin):
-        pass
+    def isUpToDate(self, targetPlugin):
+        "Checks if the plugin is up to date or not"
+
+        # First checks if the plugin is installed!
+        if self.isInstalled(targetPlugin) is True:
+            # Gets the version of installed plugin.
+            from git import Repo
+            print(targetPlugin.plugin_dir)
+            repository = Repo(targetPlugin.plugin_dir)
+            print("It is installed!")
+            # Fetch information from the remote repository.
+            repository.git.fetch()
+            # Gets the `git status` of the repository.
+            git_status = repository.git.status()
+            # Checks if the repository is up-to-date with remote.
+            if re.findall("clean", git_status) or re.findall("up-to-date", git_status):
+                print("Latest version already installed!")
+                return True
+
+            else:
+                # New version available!
+                return False
+
+        else:
+            # If the plugin isn't installed.
+            print("Plugin not installed!")
+            return None
 
     def uninstall(self, plugin):
         "Uninstall a GitHub workbench"
