@@ -51,28 +51,34 @@ class Fetch(object):
 
     def __init__(self):
         print("Object created")
-        self.Plugins = []
+        return
 
     def getPluginsList(self):
         print("Plugins list")
+        return
 
     def getInfo(self, plugin):
         return plugin
 
     def isInstalled(self, plugin):
         print("If installed or not")
+        return
 
     def install(self, plugin):
         print("Installing")
+        return
 
     def isUpToDate(self, plugin):
         print("Check for latest version")
+        return
 
     def uninstall(self, plugin):
         print("Un-installation")
+        return
 
     def update(self, plugin):
         print("Update the plugin")
+        return
 
 
 class FetchFromGitHub(Fetch):
@@ -81,7 +87,6 @@ class FetchFromGitHub(Fetch):
     def __init__(self):
         print("Fetching GitHub Workbenches")
         # For storing instances of Plugin() class.
-        # self.instances = []
         self.instances = {}
         self.gitPlugins = []
         self.plugin_type = "Workbench"
@@ -229,9 +234,11 @@ class FetchFromGitHub(Fetch):
             """
             git.Repo.clone_from(plugin.baseurl, self.install_dir, depth=1)
             print("Done!")
+            return True
 
         else:
             print("Plugin already installed!")
+            return False
 
     def isUpToDate(self, targetPlugin):
         "Checks if the plugin is up to date or not"
@@ -265,11 +272,14 @@ class FetchFromGitHub(Fetch):
     def uninstall(self, plugin):
         "Uninstall a GitHub workbench"
         if self.isInstalled(plugin):
+            # Possible ToDo: Add exception for permission check.
             print("Un-installing....", self.install_dir)
             shutil.rmtree(self.install_dir)
+            return True
 
         else:
             print("Invalid plugin!")
+            return False
 
     def update(self, plugin):
         "Update a GitHub workbench"
@@ -278,9 +288,11 @@ class FetchFromGitHub(Fetch):
             # git pull the changes to update the plugin.
             self.repository.git.pull()
             print("Plugin successfully updated!")
+            return True
 
         else:
             print("Plugin already up-to-date.")
+            return False
 
 
 class FetchFromWiki(Fetch):
@@ -466,9 +478,11 @@ class FetchFromWiki(Fetch):
                 macro_file.write(macro_code.encode("utf8"))
                 macro_file.close()
                 print("Done!")
+                return True
 
             else:
                 print("Plugin already installed!")
+                return False
         """
         except:
             print("Couldn't create the file", install_dir)
@@ -504,9 +518,11 @@ class FetchFromWiki(Fetch):
         if self.isInstalled(targetPlugin):
             print("Un-installing....", self.install_dir)
             os.remove(self.install_dir)
+            return True
 
         else:
             print("Invalid plugin")
+            return False
 
     def update(self, targetPlugin):
         "Update a Macro plugin"
@@ -518,9 +534,11 @@ class FetchFromWiki(Fetch):
             self.install(targetPlugin)
             os.remove(backup_file)
             print("Plugin successfully updated!")
+            return True
 
         else:
             print("Plugin already up-to-date.")
+            return False
 
 
 class PluginManager():
@@ -576,7 +594,7 @@ class PluginManager():
     def install(self, targetPlugin):
         "Install a plugin"
         if targetPlugin in self.totalPlugins:
-            targetPlugin.fetch.install(targetPlugin)
+            return targetPlugin.fetch.install(targetPlugin)
 
     def isUpToDate(self, targetPlugin):
         "Checks if the plugin is up to date"
@@ -586,9 +604,9 @@ class PluginManager():
     def uninstall(self, targetPlugin):
         "Uninstall a plugin"
         if targetPlugin in self.totalPlugins:
-            targetPlugin.fetch.uninstall(targetPlugin)
+            return targetPlugin.fetch.uninstall(targetPlugin)
 
     def update(self, targetPlugin):
         "Update a plugin"
         if targetPlugin in self.totalPlugins:
-            targetPlugin.fetch.update(targetPlugin)
+            return targetPlugin.fetch.update(targetPlugin)
