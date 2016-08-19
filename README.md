@@ -56,7 +56,7 @@ with adequate information.
 
 ###  Some other dependencies
 These ones are pre-installed on most of the systems.
-- os, re, socket, FreeCAD, shutil
+- os, re, socket, FreeCAD, shutil, glob
 
 ### Guide to import FreeCAD:
 https://mandeep7.wordpress.com/2016/07/23/import-freecad-in-python/

@@ -21,6 +21,7 @@ from socket import gaierror
 # https://mandeep7.wordpress.com/2016/07/23/import-freecad-in-python/
 import FreeCAD
 import shutil
+import glob
 # import ipdb
 
 
@@ -430,15 +431,42 @@ class FetchFromWiki(Fetch):
         # Store version information after removing new line from it.
         version = info.version
         # The macro installation path.
-        self.install_dir = os.path.join(self.macro_path, targetPlugin.name +
-                                        "_" + version + ".FCMacro")
+        self.plugin_path = os.path.join(self.macro_path, targetPlugin.name)
+        # Append macro version and extension to the macro path.
+        self.install_dir = self.plugin_path + "_" + version + ".FCMacro"
+        # Associate the install_dir to the Plugin instance itself.
         targetPlugin.plugin_dir = self.install_dir
         print(targetPlugin.plugin_dir)
 
-        # Checks if the plugin installation path already exists.
-        if os.path.exists(self.install_dir):
-            return True
-        else:
+        # Checks if the plugin installation path already exists with any
+        # version.
+        self.exists = glob.glob(self.plugin_path + "*" + ".FCMacro")
+        try:
+            # If the path exists, then return True and collect its version.
+            if self.exists[0]:
+                print("Macro already installed.")
+                try:
+                    # Fetches the currently installed macro version.
+                    self.installed_version = re.search('_(\d.+?).FCMacro',
+                                                       self.exists[0]).group(1)
+
+                except AttributeError:
+                    print("Macro with Invalid version found!")
+                    """# Remove if multiple versions installed.
+                    for path in self.exists:
+                        os.remove(path)
+                    """
+                    return False
+
+                else:
+                    return True
+
+            else:
+                print("Macro isn't installed.")
+                return False
+
+        except IndexError:
+            print("Plugin not installed.")
             return False
 
     def install(self, targetPlugin):
@@ -493,14 +521,16 @@ class FetchFromWiki(Fetch):
 
         # First checks if the plugin is installed!
         if self.isInstalled(targetPlugin) is True:
+            """
             # Gets the version of installed plugin.
             try:
                 current_version = re.search('_(\d.+?).FCMacro', targetPlugin.plugin_dir).group(1)
                 # current_version = re.findall('_(\d.+?).FCMacro', targetPlugin.plugin_dir)
             except TypeError:
                 print("Unexpectedly, couldn't get the plugin dir!")
+            """
             # Compares local version with the remote version.
-            if current_version == targetPlugin.version:
+            if self.installed_version is targetPlugin.version:
                 print("Latest version already installed!")
                 return True
 
@@ -516,8 +546,8 @@ class FetchFromWiki(Fetch):
     def uninstall(self, targetPlugin):
         "Uninstalls a Macro plugin"
         if self.isInstalled(targetPlugin):
-            print("Un-installing....", self.install_dir)
-            os.remove(self.install_dir)
+            print("Un-installing....", self.exists[0])
+            os.remove(self.exists[0])
             return True
 
         else:
@@ -528,11 +558,12 @@ class FetchFromWiki(Fetch):
         "Update a Macro plugin"
         if self.isUpToDate(targetPlugin) is False:
             print("Updating...")
-            backup_file = targetPlugin.plugin_dir + "bak"
-            os.rename(targetPlugin.plugin_dir, backup_file)
-            # Downloading the Macro again to update the plugin.
-            self.install(targetPlugin)
-            os.remove(backup_file)
+            backup_file = self.exists[0] + ".bak"
+            os.rename(self.exists[0], backup_file)
+            # Downloading the Macro again to update the plugin and remove
+            # backup file.
+            if self.install(targetPlugin) is True:
+                os.remove(backup_file)
             print("Plugin successfully updated!")
             return True
 
