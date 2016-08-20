@@ -45,6 +45,11 @@ one of the tasks with highest priority (bounty).
 - **Highly unstable :D** : Needs testing under different situations. Test and
 if a bug is found, report it at https://github.com/mandeeps708/PluginManager/issues
 with adequate information.
+- **Hybrid Macros** : There are some macros that are more than just one file.
+For example: https://github.com/Rentlau/WorkFeature
+They are being identified as a Workbench as it's on GitHub WB repo. But it
+a macro to work. Hence it needed to be placed in the "Macro" folder instead of
+"Mod".
 
 
 ## Installation
@@ -53,6 +58,10 @@ with adequate information.
 - Requests ($ `pip install requests`)
 - PyGithub ($ `pip install pygithub`)
 - GitPython ($ `pip install gitpython`)
+
+**Note**: You must have `pip` installed to use above commands. On GNU/Linux, use
+sudo to execute these (if you are not using `virtualenv`).
+More on pip: https://packaging.python.org/installing
 
 ###  Some other dependencies
 These ones are pre-installed on most of the systems.

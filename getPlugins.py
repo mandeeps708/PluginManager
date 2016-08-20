@@ -5,7 +5,7 @@
 
 * File Name : getPlugins.py
 
-* Purpose : get all plugins.
+* Purpose : Example usage of the pluginManager.
 
 * Creation Date : 20-06-2016
 
@@ -14,28 +14,48 @@
 """
 
 from __future__ import print_function
-import pluginManager
+from pluginManager import PluginManager
 # import ipdb
 
-obj = pluginManager.PluginManager()
-plugins = obj.allPlugins()
+# May also do:
+# import pluginManager
+# pm = pluginManager.PluginManager()
 
-# Getting a list of all Plugins.
-for index, plugin in enumerate(plugins):
+""" This is an example file to use the pluginManager.py. It have some lines
+as comments and their respective description. Uncomment a line to see it in
+action. For example, uncomment the line 50 i.e. "# pm.install(plugin)" to
+install the plugin.
+"""
+
+# Creating instance of PluginManager class.
+pm = PluginManager()
+# Get all Plugins in form of a list.
+# Access individual all_plugins as all_plugins[1]
+all_plugins = pm.allPlugins()
+
+# Print a list and the respecive indices of all Plugins by iterating over it.
+for index, plugin in enumerate(all_plugins):
     print("\n===========")
     print(index, plugin.name)
-    # obj.info(plugin)
-    # if plugin.plugin_type == "Macro":
-    #     obj.install(plugin)
-# obj.install(plugins[21])
-obj.info(plugins[21])
-"""
-# ipdb.set_trace()
-obj.info(plugins[2])
-obj.info(plugins[7])
-obj.info(plugins[0])
-obj.info(plugins[24])
-obj.install(plugins[21])
-obj.install(plugins[2])
-"""
-# obj.install(plugins[0])
+
+# Select a particular plugin. Let's say a Macro.
+plugin = all_plugins[23]
+
+# Get additional information about this plugin.
+pm.info(plugin)
+
+# Check if the plugin is installed or not.
+print("\nChecking if the plugin is installed: ")
+pm.isInstalled(plugin)
+
+# Install a plugin.
+# pm.install(plugin)
+
+# Check if the plugin is up-to-date (latest version available).
+# pm.isUpToDate(plugin)
+
+# Update a plugin.
+# pm.update(plugin)
+
+# Uninstall a plugin.
+# pm.uninstall(plugin)
