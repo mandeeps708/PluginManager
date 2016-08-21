@@ -1,18 +1,18 @@
 # PluginManager
-A Plugin Manager for FreeCAD. 
+A Plugin Manager for [FreeCAD](https://github.com/FreeCAD/FreeCAD). 
 
 ## Concept
 There are mainly two ways to add functionality to FreeCAD (for user's ease).
 
-1. Workbenches
-2. Macros
+1. [Workbenches](http://www.freecadweb.org/wiki/index.php?title=Workbenches)
+2. [Macros](http://www.freecadweb.org/wiki/index.php?title=Macros)
 
 Let's consider both these as Plugins. The Workbenches are stored at a
 GitHub repository as submodules. While the macros are currently being stored
 at the FreeCAD Wiki. So, finding and installing can certainly be a non-obvious
 thing. That's when this Plugin Manager comes into play!
 
-Read more about what are Workbenches and Macros here [Link to be added].
+Read more about what are  Workbenches and Macros [here](https://mandeep7.wordpress.com/2016/06/01/freecad-plugins).
 
 ## Present Scenario
 Currently, the PluginManager is command-line only. No GUI; but it's the very
@@ -21,22 +21,22 @@ next thing that is to be done.
 ### What works?
 The following is the list of what's currently working in this Plugin Manager.
 
-- **Get Plugins List** : Get list of Plugins that are available to be
+- [x] **Get Plugins List** : Get list of Plugins that are available to be
 installed. Each Plugin within the list will have Plugin name, URL and its type.
-- **Get Additional Info** : Get additional information about a Plugin. It will
+- [x] **Get Additional Info** : Get additional information about a Plugin. It will
 give additional information like Plugin Author, Description of what it does and
 version (in case of Macro).
-- **Plugin Installed or not** : Check if a Plugin is currently installed on the
+- [x] **Plugin Installed or not** : Check if a Plugin is currently installed on the
 system or not.
-- **Install a Plugin** : If not currently installed, then a Plugin can be
+- [x] **Install a Plugin** : If not currently installed, then a Plugin can be
 easily installed.
-- **Plugin up-to-date** : Check if an installed Plugin is up-to-date. Is there
+- [x] **Plugin up-to-date** : Check if an installed Plugin is up-to-date. Is there
 any newer version available of that Plugin?
-- **Update a Plugin** : If a Plugin is having a newer version available, then
+- [x] **Update a Plugin** : If a Plugin is having a newer version available, then
 it can be updated to that newer version.
-- **Uninstall a Plugin** : Don't need a Plugin anymore? No problem, one can
+- [x] **Uninstall a Plugin** : Don't need a Plugin anymore? No problem, one can
 very easily uninstall it.
-- **API** : There is an API providing to use the above features with ease. Just
+- [x] **API** : There is an API providing to use the above features with ease. Just
 import the PluginManager and start calling the methods.
 
 ## What's next?
@@ -49,7 +49,8 @@ with adequate information.
 For example: https://github.com/Rentlau/WorkFeature
 They are being identified as a Workbench as it's on GitHub WB repo. But it
 a macro to work. Hence it needed to be placed in the "Macro" folder instead of
-"Mod".
+"Mod". See [here](https://github.com/FreeCAD/FreeCAD-addons/blob/master/addons_installer.FCMacro#L313) to get hint on solving.
+- **Fallback method** : Add a fallback method for working with GitHub plugins. There are license compatibility issues with distributing the git executable, hence we may consider the simple HTTP method for downloading the plugins or another alternative like dulwich and gittle.
 
 
 ## Installation
@@ -60,8 +61,9 @@ a macro to work. Hence it needed to be placed in the "Macro" folder instead of
 - GitPython ($ `pip install gitpython`)
 
 **Note**: You must have `pip` installed to use above commands. On GNU/Linux, use
-sudo to execute these (if you are not using `virtualenv`).
-More on pip: https://packaging.python.org/installing
+sudo to execute these (if you are not using `virtualenv`). Try to install these
+packages using your OS's native package manager.
+More on pip [here](https://packaging.python.org/installing).
 
 ###  Some other dependencies
 These ones are pre-installed on most of the systems.
@@ -71,17 +73,33 @@ These ones are pre-installed on most of the systems.
 https://mandeep7.wordpress.com/2016/07/23/import-freecad-in-python/
 
 ## How to use?
+Following is a quick guide on how to use the Plugin Manager.
 
 ### Through Python
 
-Just see the example usage in the file getPlugins.py in this repository
-(directory).
+Here is a basic example of using the Plugin Manager.
+
+```python
+from pluginManager import PluginManager
+instance = PluginManager()            # creating instance of api class
+all_plugins = instance.allPlugins()   # get all plugins (as a list)
+instance.info(all_plugins[23])        # get info about a particular plugin
+instance.install(all_plugins[23])     # install it
+```
+Hence, it's a 3-step process:
+
 - Import the pluginManager.
 - Create an instance of the PluginManager() class (API).
 - Use that instance to access methods (features) via the API.
 
+For more details and options about what else you can do with it, just see the example 
+usage in the file [getPlugins.py](https://github.com/mandeeps708/PluginManager/blob/master/getPlugins.py)
+in this repository/directory.
+
 #### Execution
-After you are done with what you want the PluginManager to do for you, just
-fire the following command from the console to execute and see it in action.
+After you are done with what you want the PluginManager to do for you, it just needs to
+be executed. For example: fire the following command from the console to execute the
+[getPlugins.py](https://github.com/mandeeps708/PluginManager/blob/master/getPlugins.py)
+example and see it in action.
 
 $ `python getPlugins.py`
