@@ -1,5 +1,7 @@
 # PluginManager
-A Plugin Manager for [FreeCAD](https://github.com/FreeCAD/FreeCAD). 
+A Plugin Manager for [FreeCAD](https://github.com/FreeCAD/FreeCAD).
+
+Started as a Google Summer of Code ([GSoC](https://en.wikipedia.org/wiki/Google_Summer_of_Code) 2016) [project](https://summerofcode.withgoogle.com/projects/#5341872155262976) with proposal [here](http://brlcad.org/wiki/User:Mandeeps708/gsoc_proposal) and dev logs [here](http://brlcad.org/wiki/User:Mandeeps708/GSoC16/logs#Coding_Period).
 
 ## Concept
 There are mainly two ways to add functionality to FreeCAD (for user's ease).
