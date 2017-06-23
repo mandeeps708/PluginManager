@@ -6,23 +6,45 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>686</width>
-    <height>321</height>
+    <width>493</width>
+    <height>474</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="buttons">
+     <item>
+      <widget class="QPushButton" name="start_bt">
+       <property name="text">
+        <string>Start</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="install_bt">
+       <property name="text">
+        <string>Install</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="uninstall_bt">
+       <property name="text">
+        <string>Uninstall</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item row="0" column="0">
-    <widget class="QListWidget" name="tablu">
-     <property name="maximumSize">
-      <size>
-       <width>393</width>
-       <height>16777215</height>
-      </size>
-     </property>
-    </widget>
+    <layout class="QVBoxLayout" name="vertical">
+     <item>
+      <widget class="QListWidget" name="pluginlist"/>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
