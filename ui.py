@@ -1,3 +1,18 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+
+* File Name : ui.py
+
+* Purpose : User-Interface for Plugin Installer
+
+* Creation Date : 14-06-2017
+
+* Copyright (c) 2017 Mandeep Singh <mandeeps708@gmail.com>
+
+"""
+
 from __future__ import print_function
 from PySide import QtGui
 from PySide import QtCore
@@ -8,6 +23,7 @@ from pluginManager import PluginManager
 class MyWidget(QtGui.QMainWindow):
     """PluginManager User Interface."""
     def __init__(self):
+        """Signals & slots"""
         apply(QtGui.QMainWindow.__init__, (self,))
 
         # Loading Qt Designer UI file.
