@@ -223,8 +223,10 @@ class FetchFromGitHub(Fetch):
         "Installs a GitHub plugin"
 
         print("Installing...", plugin.name)
-        import git
-
+        try:
+            import git
+        except ImportError:
+            print("Install git module")
         # Clone the GitHub repository via the URL.
         # git.Git().clone(str(plugin.baseurl), install_dir)
 
@@ -276,6 +278,7 @@ class FetchFromGitHub(Fetch):
             # Possible ToDo: Add exception for permission check.
             print("Un-installing....", self.install_dir)
             shutil.rmtree(self.install_dir)
+            print("Successfully uninstalled!")
             return True
 
         else:

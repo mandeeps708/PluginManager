@@ -17,13 +17,6 @@
    <item row="1" column="0">
     <layout class="QHBoxLayout" name="buttons">
      <item>
-      <widget class="QPushButton" name="start_bt">
-       <property name="text">
-        <string>Start</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="install_bt">
        <property name="text">
         <string>Install</string>
@@ -34,6 +27,13 @@
       <widget class="QPushButton" name="uninstall_bt">
        <property name="text">
         <string>Uninstall</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="exit_bt">
+       <property name="text">
+        <string>Exit</string>
        </property>
       </widget>
      </item>

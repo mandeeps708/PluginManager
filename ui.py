@@ -32,21 +32,54 @@ class MyWidget(QtGui.QMainWindow):
         qt_file.open(QtCore.QFile.ReadOnly)
         self.myWidget = loader.load(qt_file, self)
         qt_file.close()
-
         self.setCentralWidget(self.myWidget)
+
+        # Start PluginManager
+        self.starter()
+
         # QtCore.QObject.connect(self.myWidget.calculateButton,
         #                        QtCore.SIGNAL("clicked()"), self.accept)
 
         # Load plugin list after clicking on "Start". To be automated later.
-        QtCore.QObject.connect(self.myWidget.start_bt,
-                               QtCore.SIGNAL("clicked()"), self.starter)
+        # QtCore.QObject.connect(self.myWidget.start_bt,
+        #                        QtCore.SIGNAL("clicked()"), self.starter)
+        # Print info on each click on a Plugin.
+        QtCore.QObject.connect(self.myWidget.pluginlist,
+                               QtCore.SIGNAL("currentRowChanged(int)"),
+                               self.print_current)
+        # Call install function when Install button is clicked.
+        QtCore.QObject.connect(self.myWidget.install_bt,
+                               QtCore.SIGNAL("clicked()"), self.installPlugin)
+        # Call Uninstall function when Uninstall button is clicked.
+        QtCore.QObject.connect(self.myWidget.uninstall_bt,
+                               QtCore.SIGNAL("clicked()"), self.uninstallPlugin)
+        # Close the program.
+        QtCore.QObject.connect(self.myWidget.exit_bt,
+                               QtCore.SIGNAL("clicked()"), self.close)
 
     def starter(self):
         """To be initialized after basic UI has loaded."""
         # Load plugin manager & fetch plugins.
-        instance = PluginManager()
-        plugins = instance.allPlugins()
-        self.accept(plugins)
+        self.pm = PluginManager()
+        self.plugins = self.pm.allPlugins()
+        self.accept(self.plugins)
+
+    def print_current(self):
+        """Print info about currently selected plugin."""
+        current_plugin = self.myWidget.pluginlist.currentRow()
+        # print(current_plugin, self.myWidget.pluginlist.currentItem.text())
+        self.pm.info(self.plugins[current_plugin])
+
+    def installPlugin(self):
+        """Install the currently selected plugin."""
+        current_plugin = self.myWidget.pluginlist.currentRow()
+        # print(current_plugin, self.myWidget.pluginlist.currentItem.text())
+        self.pm.install(self.plugins[current_plugin])
+
+    def uninstallPlugin(self):
+        """Uninstalls the currently uninstalled plugin."""
+        current_plugin = self.myWidget.pluginlist.currentRow()
+        self.pm.uninstall(self.plugins[current_plugin])
 
     def accept(self, plugins):
         """Add plugins to the list widget."""
@@ -68,11 +101,13 @@ class MyWidget(QtGui.QMainWindow):
         for i, plugin_name in enumerate(data1):
             self.myWidget.pluginlist.addItem(plugin_name)
 
+        print(self.myWidget.pluginlist.currentRow())
+
+
 if __name__ == '__main__':
     import sys
     import os
     print("Running in " + os.getcwd() + " .\n")
-
     app = QtGui.QApplication(sys.argv)
 
     win = MyWidget()
