@@ -61,6 +61,7 @@ a macro to work. Hence it needed to be placed in the "Macro" folder instead of
 - Requests ($ `pip install requests`)
 - PyGithub ($ `pip install pygithub`)
 - GitPython ($ `pip install gitpython`)
+- PySide ($ `pip install PySide`)
 
 **Note**: You must have `pip` installed to use above commands. On GNU/Linux, use
 sudo to execute these (if you are not using `virtualenv`). Try to install these
@@ -102,6 +103,10 @@ in this repository/directory.
 
 As of now, to use GUI you need to run:  
 `python ui.py`
+
+#### Screenshots
+
+![Plugin Manager Screenshot](images/ui.png?raw=true "Plugin Manager")
 
 #### Execution
 After you are done with what you want the PluginManager to do for you, it just needs to

@@ -18,7 +18,7 @@ from PySide import QtGui
 from PySide import QtCore
 from PySide import QtUiTools
 from pluginManager import PluginManager
-import ipdb
+# import ipdb
 
 class MyWidget(QtGui.QMainWindow):
     """PluginManager User Interface."""
