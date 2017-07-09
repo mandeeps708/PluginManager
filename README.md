@@ -98,6 +98,11 @@ For more details and options about what else you can do with it, just see the ex
 usage in the file [getPlugins.py](https://github.com/mandeeps708/PluginManager/blob/master/getPlugins.py)
 in this repository/directory.
 
+### GUI
+
+As of now, to use GUI you need to run:  
+`python ui.py`
+
 #### Execution
 After you are done with what you want the PluginManager to do for you, it just needs to
 be executed. For example: fire the following command from the console to execute the
