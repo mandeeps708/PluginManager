@@ -18,7 +18,7 @@ from PySide import QtGui
 from PySide import QtCore
 from PySide import QtUiTools
 from pluginManager import PluginManager
-
+import ipdb
 
 class MyWidget(QtGui.QMainWindow):
     """PluginManager User Interface."""
@@ -63,12 +63,21 @@ class MyWidget(QtGui.QMainWindow):
         self.pm = PluginManager()
         self.plugins = self.pm.allPlugins()
         self.accept(self.plugins)
+        self.myWidget.textview.setPlainText("Welcome to the Plugin Manager.")
 
     def print_current(self):
-        """Print info about currently selected plugin."""
+        """Print info about currently selected plugin into the GUI."""
         current_plugin = self.myWidget.pluginlist.currentRow()
+        # ipdb.set_trace()
         # print(current_plugin, self.myWidget.pluginlist.currentItem.text())
-        self.pm.info(self.plugins[current_plugin])
+        info = self.pm.info(self.plugins[current_plugin])
+
+        text = "Name: " + str(info.name) + "\n" + \
+            "Author: " + str(info.author) + "\n" + \
+            "Description: " + str(info.description) + "\n" \
+            "Plugin Type: " + str(info.plugin_type) + "\n" + \
+            "URL: " + str(info.baseurl)
+        self.myWidget.textview.setPlainText(text)
 
     def installPlugin(self):
         """Install the currently selected plugin."""
