@@ -20,6 +20,7 @@ from PySide import QtUiTools
 from pluginManager import PluginManager
 # import ipdb
 
+
 class MyWidget(QtGui.QMainWindow):
     """PluginManager User Interface."""
     def __init__(self):
@@ -34,15 +35,16 @@ class MyWidget(QtGui.QMainWindow):
         qt_file.close()
         self.setCentralWidget(self.myWidget)
 
-        # Start PluginManager
-        self.starter()
+        # ##### Threading #####
+        # Creating instance of new thread class.
+        self.workerThread = WorkerThread()
+        self.myWidget.textview.setPlainText("Welcome to the Plugin Manager. \
+                                            \n Please wait while it loads Plugins...")
+        # Connecting to the custom emitted signal.
+        self.connect(self.workerThread, QtCore.SIGNAL("ThreadDone()"), self.starter, QtCore.Qt.DirectConnection)
+        # Start the thread (calls the run() method).
+        self.workerThread.start()
 
-        # QtCore.QObject.connect(self.myWidget.calculateButton,
-        #                        QtCore.SIGNAL("clicked()"), self.accept)
-
-        # Load plugin list after clicking on "Start". To be automated later.
-        # QtCore.QObject.connect(self.myWidget.start_bt,
-        #                        QtCore.SIGNAL("clicked()"), self.starter)
         # Print info on each click on a Plugin.
         QtCore.QObject.connect(self.myWidget.pluginlist,
                                QtCore.SIGNAL("currentRowChanged(int)"),
@@ -62,8 +64,7 @@ class MyWidget(QtGui.QMainWindow):
         # Load plugin manager & fetch plugins.
         self.pm = PluginManager()
         self.plugins = self.pm.allPlugins()
-        self.accept(self.plugins)
-        self.myWidget.textview.setPlainText("Welcome to the Plugin Manager.")
+        self.display(self.plugins)
 
     def print_current(self):
         """Print info about currently selected plugin into the GUI."""
@@ -90,28 +91,31 @@ class MyWidget(QtGui.QMainWindow):
         current_plugin = self.myWidget.pluginlist.currentRow()
         self.pm.uninstall(self.plugins[current_plugin])
 
-    def accept(self, plugins):
+    def display(self, plugins):
         """Add plugins to the list widget."""
-        # data1 = ['a1', 'a2', 'a3', 'a4']
-        # data2 = ['b1', 'b2', 'b3', 'b4']
         # Converting to a list of strings.
         data1 = [str(i) for i in plugins]
-        """
-        # Using QTableWidget
-        self.myWidget.tablu.insertRow(i)
-        item = QtGui.QTableWidgetItem(data1[i])
-        self.myWidget.tablu.setItem(i, 0, item)
-        # item2 = QtGui.QTableWidgetItem(data2[i])
-        # self.myWidget.tablu.setItem(i, 1, item2)
-        """
         # Using QListWidget
         # Add plugins one by one into the QListWidget "pluginlist".
-        # for i in range(len(data1)):
         for i, plugin_name in enumerate(data1):
             self.myWidget.pluginlist.addItem(plugin_name)
 
         print(self.myWidget.pluginlist.currentRow())
 
+
+class WorkerThread(QtCore.QThread):
+    """Class for executing stuff in new thread."""
+    def __init__(self, parent=None):
+        """Constructor inheriting QThread stuff."""
+        super(WorkerThread, self).__init__(parent)
+
+    def run(self):
+        """Overriding QThread method. Threading helper.
+        Finally to use start().
+        """
+        print("Thread done!")
+        # Emitting a custom signal to be later catched in GUI (MyWidget) class.
+        self.emit(QtCore.SIGNAL("ThreadDone()"))
 
 if __name__ == '__main__':
     import sys
