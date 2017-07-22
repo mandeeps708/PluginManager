@@ -75,7 +75,7 @@ class MyWidget(QtGui.QMainWindow):
 
         text = "Name: " + str(info.name) + "\n" + \
             "Author: " + str(info.author) + "\n" + \
-            "Description: " + str(info.description) + "\n" \
+            "Description: " + info.description + "\n" \
             "Plugin Type: " + str(info.plugin_type) + "\n" + \
             "URL: " + str(info.baseurl)
         self.myWidget.textview.setPlainText(text)

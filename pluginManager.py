@@ -344,10 +344,12 @@ class FetchFromWiki(Fetch):
             for macro in macros:
                 # Prints macro name
                 # ipdb.set_trace()
-                macro_name = macro.a.getText()
+                # Due to the additional <a> tag of new macro icon on wiki.
+                macro = macro.findAllNext()[2]
+                macro_name = macro.getText()
 
                 # Macro URL.
-                macro_url = "http://freecadweb.org" + macro.a.get("href")
+                macro_url = "http://freecadweb.org" + macro.get("href")
                 # print(macro_name, macro_url)
                 macro_instance = Plugin(macro_name, macro_url,
                                         self.plugin_type)
