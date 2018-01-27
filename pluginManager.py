@@ -93,7 +93,8 @@ class FetchFromGitHub(Fetch):
         self.plugin_type = "Workbench"
 
         # Specify the directory where the Workbenches are to be installed.
-        self.workbench_path = os.path.join(FreeCAD.ConfigGet("UserAppData"), "Mod")
+        self.workbench_path = os.path.join(FreeCAD.ConfigGet("UserAppData"),
+                                           "Mod")
 
         # If any of the paths do not exist, then create one.
         if not os.path.exists(self.workbench_path):
@@ -147,7 +148,8 @@ class FetchFromGitHub(Fetch):
             # print("\nPlugins: ", self.instances)
             return self.instances.values()
 
-        except gaierror or timeout:
+        # except gaierror or timeout:
+        except gaierror:
             print("Please check your network connection!")
 
         except KeyboardInterrupt:
@@ -258,18 +260,20 @@ class FetchFromGitHub(Fetch):
             # Gets the `git status` of the repository.
             git_status = self.repository.git.status()
             # Checks if the repository is up-to-date with remote.
-            if re.findall("clean", git_status) or re.findall("up-to-date", git_status):
+            if re.findall("clean", git_status) or \
+                    re.findall("up-to-date", git_status):
                 print("Latest version already installed!")
                 return True
 
-            elif re.findall("behind", git_status) or re.findall("git pull", git_status):
+            elif re.findall("behind", git_status) or \
+                    re.findall("git pull", git_status):
                 # New version available!
                 print("New version available!")
                 return False
 
         else:
             # If the plugin isn't installed.
-            print("Plugin not installed!")
+            print("Plugin isn't already installed!")
             return None
 
     def uninstall(self, plugin):
@@ -309,7 +313,8 @@ class FetchFromWiki(Fetch):
         # ipdb.set_trace()
 
         # Get the user-preferred Macro directory.
-        self.macro_path = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Macro").GetString("MacroPath")
+        fc_macro = "User parameter:BaseApp/Preferences/Macro"
+        self.macro_path = FreeCAD.ParamGet(fc_macro).GetString("MacroPath")
 
         # If not specified by user, then set a default one.
         if not self.macro_path:
@@ -481,12 +486,14 @@ class FetchFromWiki(Fetch):
 
         # Lambda function to check the path existence.
         # self.isThere = lambda path: os.path.exists(path)
-
+        # ipdb.set_trace()
         macro = self.macroWeb(targetPlugin)
 
         try:
             try:
-                macro_code = macro.select(".mw-highlight.mw-content-ltr.macro-code")[0].getText()
+                # macro_code = macro.select(".mw-highlight.mw-content-ltr.macro-code")[0].getText()
+                # ipdb.set_trace()
+                macro_code = macro.select("pre")[0].getText()
 
             except IndexError:
                 macro_code = macro.select(".mw-highlight.mw-content-ltr")[0].getText()
@@ -506,8 +513,11 @@ class FetchFromWiki(Fetch):
 
         else:
             if not self.isInstalled(targetPlugin):
+                from html.parser import HTMLParser
                 macro_file = open(self.install_dir, 'w+')
                 # ipdb.set_trace()
+                macro_code = HTMLParser().unescape(macro_code)
+                # macro_code = macro_code.replace("\xc2\xa0", " ")
                 macro_file.write(macro_code.encode("utf8"))
                 macro_file.close()
                 print("Done!")
@@ -545,7 +555,7 @@ class FetchFromWiki(Fetch):
 
         else:
             # If the plugin isn't installed.
-            print("Plugin not installed!")
+            print("Plugin isn't already installed!")
             return None
 
     def uninstall(self, targetPlugin):

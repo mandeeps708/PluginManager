@@ -19,6 +19,7 @@ from PySide import QtCore
 from PySide import QtUiTools
 from pluginManager import PluginManager
 # import ipdb
+from thread import start_new_thread
 
 
 class MyWidget(QtGui.QMainWindow):
@@ -37,14 +38,22 @@ class MyWidget(QtGui.QMainWindow):
 
         # ##### Threading #####
         # Creating instance of new thread class.
-        self.workerThread = WorkerThread()
+        # self.workerThread = WorkerThread()
         self.myWidget.textview.setPlainText("Welcome to the Plugin Manager. \
                                             \n Please wait while it loads Plugins...")
+        """
+        self.progressBar = self.myWidget.progressBar
+        self.progressBar.setValue(0)
+        self.progressBar.hide()
+        self.statusLabel = self.myWidget.statusLabel
+        self.statusLabel.setText("Status:")
+        """
         # Connecting to the custom emitted signal.
-        self.connect(self.workerThread, QtCore.SIGNAL("ThreadDone()"), self.starter, QtCore.Qt.DirectConnection)
+        # self.connect(self.workerThread, QtCore.SIGNAL("ThreadDone()"), self.starter, QtCore.Qt.DirectConnection)
         # Start the thread (calls the run() method).
-        self.workerThread.start()
-
+        # self.workerThread.start()
+        # self.emit(QtCore.SIGNAL("ThreadDone()"))
+        start_new_thread(self.starter, ())
         # Print info on each click on a Plugin.
         QtCore.QObject.connect(self.myWidget.pluginlist,
                                QtCore.SIGNAL("currentRowChanged(int)"),
@@ -73,6 +82,11 @@ class MyWidget(QtGui.QMainWindow):
         # print(current_plugin, self.myWidget.pluginlist.currentItem.text())
         info = self.pm.info(self.plugins[current_plugin])
 
+        # When the plugin doesn't have a description (especially GitHub ones).
+        if not info.description:
+            # set default to empty.
+            info.description = ''
+
         text = "Name: " + str(info.name) + "\n" + \
             "Author: " + str(info.author) + "\n" + \
             "Description: " + info.description + "\n" \
@@ -82,14 +96,17 @@ class MyWidget(QtGui.QMainWindow):
 
     def installPlugin(self):
         """Install the currently selected plugin."""
-        current_plugin = self.myWidget.pluginlist.currentRow()
+        current_plugin_no = self.myWidget.pluginlist.currentRow()
+        current_plugin = self.plugins[current_plugin_no]
         # print(current_plugin, self.myWidget.pluginlist.currentItem.text())
-        self.pm.install(self.plugins[current_plugin])
+        start_new_thread(self.pm.install, (current_plugin, ))
 
     def uninstallPlugin(self):
         """Uninstalls the currently uninstalled plugin."""
-        current_plugin = self.myWidget.pluginlist.currentRow()
-        self.pm.uninstall(self.plugins[current_plugin])
+        current_plugin_no = self.myWidget.pluginlist.currentRow()
+        current_plugin = self.plugins[current_plugin_no]
+        # self.pm.uninstall(self.plugins[current_plugin])
+        start_new_thread(self.pm.uninstall, (current_plugin, ))
 
     def display(self, plugins):
         """Add plugins to the list widget."""
@@ -101,8 +118,7 @@ class MyWidget(QtGui.QMainWindow):
             self.myWidget.pluginlist.addItem(plugin_name)
 
         print(self.myWidget.pluginlist.currentRow())
-
-
+'''
 class WorkerThread(QtCore.QThread):
     """Class for executing stuff in new thread."""
     def __init__(self, parent=None):
@@ -113,10 +129,13 @@ class WorkerThread(QtCore.QThread):
         """Overriding QThread method. Threading helper.
         Finally to use start().
         """
-        print("Thread done!")
+        print("Thread run!")
+        my_widget = MyWidget()
+        my_widget.starter()
+        # self.connect(self, QtCore.SIGNAL("ThreadDone()"), my_widget.starter, QtCore.Qt.DirectConnection)
         # Emitting a custom signal to be later catched in GUI (MyWidget) class.
-        self.emit(QtCore.SIGNAL("ThreadDone()"))
-
+        # self.emit(QtCore.SIGNAL("ThreadDone()"))
+'''
 if __name__ == '__main__':
     import sys
     import os

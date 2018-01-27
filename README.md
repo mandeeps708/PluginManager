@@ -40,7 +40,8 @@ it can be updated to that newer version.
 very easily uninstall it.
 - [x] **API** : There is an API providing to use the above features with ease. Just
 import the PluginManager and start calling the methods.
-- [x] **Basic GUI** : Basic GUI to browse, install/uninstall plugins.
+- [x] **Basic GUI** : Basic GUI to browse, install/uninstall plugins. Experimental
+threading implemented.
 
 ## What's next?
 - **Improve GUI** : GUI needs many improvements (mainly threading).
