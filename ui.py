@@ -19,7 +19,7 @@ from PySide import QtCore
 from PySide import QtUiTools
 from pluginManager import PluginManager
 # import ipdb
-from thread import start_new_thread
+import threading
 
 
 class MyWidget(QtGui.QMainWindow):
@@ -36,9 +36,6 @@ class MyWidget(QtGui.QMainWindow):
         qt_file.close()
         self.setCentralWidget(self.myWidget)
 
-        # ##### Threading #####
-        # Creating instance of new thread class.
-        # self.workerThread = WorkerThread()
         self.myWidget.textview.setPlainText("Welcome to the Plugin Manager. \
                                             \n Please wait while it loads Plugins...")
         """
@@ -48,12 +45,9 @@ class MyWidget(QtGui.QMainWindow):
         self.statusLabel = self.myWidget.statusLabel
         self.statusLabel.setText("Status:")
         """
-        # Connecting to the custom emitted signal.
-        # self.connect(self.workerThread, QtCore.SIGNAL("ThreadDone()"), self.starter, QtCore.Qt.DirectConnection)
-        # Start the thread (calls the run() method).
-        # self.workerThread.start()
-        # self.emit(QtCore.SIGNAL("ThreadDone()"))
-        start_new_thread(self.starter, ())
+        # Start fetching things via new thread.
+        t = threading.Thread(target=self.starter, name='starter')
+        t.start()
         # Print info on each click on a Plugin.
         QtCore.QObject.connect(self.myWidget.pluginlist,
                                QtCore.SIGNAL("currentRowChanged(int)"),
@@ -99,14 +93,22 @@ class MyWidget(QtGui.QMainWindow):
         current_plugin_no = self.myWidget.pluginlist.currentRow()
         current_plugin = self.plugins[current_plugin_no]
         # print(current_plugin, self.myWidget.pluginlist.currentItem.text())
-        start_new_thread(self.pm.install, (current_plugin, ))
+        # self.pm.install(current_plugin)
+        install_thread = threading.Thread(target=self.pm.install,
+                                          name='install',
+                                          args=(current_plugin,))
+        install_thread.start()
 
     def uninstallPlugin(self):
         """Uninstalls the currently uninstalled plugin."""
         current_plugin_no = self.myWidget.pluginlist.currentRow()
         current_plugin = self.plugins[current_plugin_no]
         # self.pm.uninstall(self.plugins[current_plugin])
-        start_new_thread(self.pm.uninstall, (current_plugin, ))
+        # self.pm.uninstall(current_plugin)
+        uninstall_thread = threading.Thread(target=self.pm.uninstall,
+                                            name='uninstall',
+                                            args=(current_plugin,))
+        uninstall_thread.start()
 
     def display(self, plugins):
         """Add plugins to the list widget."""
@@ -118,24 +120,7 @@ class MyWidget(QtGui.QMainWindow):
             self.myWidget.pluginlist.addItem(plugin_name)
 
         print(self.myWidget.pluginlist.currentRow())
-'''
-class WorkerThread(QtCore.QThread):
-    """Class for executing stuff in new thread."""
-    def __init__(self, parent=None):
-        """Constructor inheriting QThread stuff."""
-        super(WorkerThread, self).__init__(parent)
 
-    def run(self):
-        """Overriding QThread method. Threading helper.
-        Finally to use start().
-        """
-        print("Thread run!")
-        my_widget = MyWidget()
-        my_widget.starter()
-        # self.connect(self, QtCore.SIGNAL("ThreadDone()"), my_widget.starter, QtCore.Qt.DirectConnection)
-        # Emitting a custom signal to be later catched in GUI (MyWidget) class.
-        # self.emit(QtCore.SIGNAL("ThreadDone()"))
-'''
 if __name__ == '__main__':
     import sys
     import os
